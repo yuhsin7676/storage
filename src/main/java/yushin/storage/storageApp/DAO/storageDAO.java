@@ -2,49 +2,49 @@ package yushin.storage.storageApp.DAO;
 
 import java.util.List;
 import org.hibernate.Session;
-import yushin.storage.storageApp.entities.Item;
+import yushin.storage.storageApp.entities.Storage;
 import yushin.storage.storageApp.util.HibernateSessionUtil;
 
-public class ItemDAO {
+public class storageDAO {
     
-    public void create(Item item){
+    public void create(Storage storage){
         
         Session session = HibernateSessionUtil.instance.openSession();
-        session.save(item);
+        session.save(storage);
         session.close();
         
     }
     
-    public Item findById(int id){
+    public Storage findById(int id){
         
         Session session = HibernateSessionUtil.instance.openSession();
-        Item item = session.find(Item.class, id);
+        Storage storage = session.find(Storage.class, id);
         session.close();
-        return item;
+        return storage;
         
     }
     
-    public void update(Item item){
+    public void update(Storage storage){
         
         Session session = HibernateSessionUtil.instance.openSession();
-        session.update(item);
-        session.close();
-        
-    }
-    
-    public void delete(Item item){
-        
-        Session session = HibernateSessionUtil.instance.openSession();
-        session.delete(item);
+        session.update(storage);
         session.close();
         
     }
     
-    public List<Item> findAll(){
+    public void delete(Storage storage){
         
         Session session = HibernateSessionUtil.instance.openSession();
-        List<Item> items = (List<Item>) session.createQuery("from item").list();
-        return items;
+        session.delete(storage);
+        session.close();
+        
+    }
+    
+    public List<Storage> findAll(){
+        
+        Session session = HibernateSessionUtil.instance.openSession();
+        List<Storage> storages = (List<Storage>) session.createQuery("from storage").list();
+        return storages;
         
     }
       
