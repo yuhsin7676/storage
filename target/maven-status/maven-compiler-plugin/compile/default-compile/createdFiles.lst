@@ -1,1 +1,6 @@
-yushin/storage/storage/Storage.class
+yushin/storage/storageApp/entities/Storage.class
+yushin/storage/storageApp/StartApp.class
+yushin/storage/storageApp/entities/Sale.class
+yushin/storage/storageApp/entities/Buy.class
+yushin/storage/storageApp/entities/Item.class
+yushin/storage/storageApp/entities/Move.class

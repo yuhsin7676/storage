@@ -1,1 +1,6 @@
-/home/ilya/NetBeansProjects/storage/src/main/java/yushin/storage/storage/Storage.java
+/home/ilya/NetBeansProjects/storage/src/main/java/yushin/storage/storageApp/entities/Item.java
+/home/ilya/NetBeansProjects/storage/src/main/java/yushin/storage/storageApp/entities/Move.java
+/home/ilya/NetBeansProjects/storage/src/main/java/yushin/storage/storageApp/entities/Storage.java
+/home/ilya/NetBeansProjects/storage/src/main/java/yushin/storage/storageApp/StartApp.java
+/home/ilya/NetBeansProjects/storage/src/main/java/yushin/storage/storageApp/entities/Sale.java
+/home/ilya/NetBeansProjects/storage/src/main/java/yushin/storage/storageApp/entities/Buy.java
