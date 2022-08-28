@@ -19,10 +19,32 @@ public class Sale {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public int id;
+    private int id;
     
-    public int storage_id;
+    private int storage_id;
     
-    public String items;
+    private String items;
+
+    public int getId() {
+        return id;
+    }
+
+    public int getStorage_id() {
+        return storage_id;
+    }
+
+    public void setStorage_id(int storage_id) {
+        this.storage_id = storage_id;
+    }
+
+    public String getItems() {
+        return items;
+    }
+
+    public void setItems(String items) {
+        this.items = items;
+    }
+    
+    
     
 }

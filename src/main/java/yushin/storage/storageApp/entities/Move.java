@@ -19,11 +19,40 @@ public class Move {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public int id;
+    private int id;
     
-    public int storage_from;
-    public int storage_to;
+    private int storage_from;
+    private int storage_to;
+    private String items;
+
+    public int getId() {
+        return id;
+    }
+
+    public int getStorage_from() {
+        return storage_from;
+    }
+
+    public void setStorage_from(int storage_from) {
+        this.storage_from = storage_from;
+    }
+
+    public int getStorage_to() {
+        return storage_to;
+    }
+
+    public void setStorage_to(int storage_to) {
+        this.storage_to = storage_to;
+    }
+
+    public String getItems() {
+        return items;
+    }
+
+    public void setItems(String items) {
+        this.items = items;
+    }
     
-    public String items;
+    
     
 }
