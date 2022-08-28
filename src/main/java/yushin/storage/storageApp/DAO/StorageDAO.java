@@ -1,5 +1,6 @@
 package yushin.storage.storageApp.DAO;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -27,11 +28,13 @@ public class StorageDAO {
     
     public static void update(Storage storage){
         
-        Session session = HibernateSessionUtil.instance.openSession();
-        Transaction tx = session.beginTransaction();
-        session.update(storage);
-        tx.commit();
-        session.close();
+        if(findById(storage.getId()) != null){
+            Session session = HibernateSessionUtil.instance.openSession();
+            Transaction tx = session.beginTransaction();
+            session.update(storage);
+            tx.commit();
+            session.close();
+        }
         
     }
     
@@ -48,7 +51,7 @@ public class StorageDAO {
     public static List<Storage> findAll(){
         
         Session session = HibernateSessionUtil.instance.openSession();
-        List<Storage> storages = (List<Storage>) session.createQuery("from storage").list();
+        List<Storage> storages = (List<Storage>) session.createQuery("From Storage").list();
         session.close();
         return storages;
         

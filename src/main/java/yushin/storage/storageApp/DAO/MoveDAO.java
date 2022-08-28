@@ -24,26 +24,10 @@ public class MoveDAO {
         
     }
     
-    public void update(Move move){
-        
-        Session session = HibernateSessionUtil.instance.openSession();
-        session.update(move);
-        session.close();
-        
-    }
-    
-    public void delete(Move move){
-        
-        Session session = HibernateSessionUtil.instance.openSession();
-        session.delete(move);
-        session.close();
-        
-    }
-    
     public List<Move> findAll(){
         
         Session session = HibernateSessionUtil.instance.openSession();
-        List<Move> moves = (List<Move>) session.createQuery("from move").list();
+        List<Move> moves = (List<Move>) session.createQuery("from Move").list();
         return moves;
         
     }

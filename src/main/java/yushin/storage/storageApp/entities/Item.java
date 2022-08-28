@@ -8,29 +8,15 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "item")
-public class Item {
+public class Item{
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     
-    private int article;
     private String name;
     private int price_buy;
     private int price_sale;
-    private int storage_id;
-
-    public int getId() {
-        return id;
-    }
-
-    public int getArticle() {
-        return article;
-    }
-
-    public void setArticle(int article) {
-        this.article = article;
-    }
 
     public String getName() {
         return name;
@@ -40,6 +26,10 @@ public class Item {
         this.name = name;
     }
 
+    public int getId(){
+        return id;
+    }
+    
     public int getPrice_buy() {
         return price_buy;
     }
@@ -56,14 +46,4 @@ public class Item {
         this.price_sale = price_sale;
     }
 
-    public int getStorage_id() {
-        return storage_id;
-    }
-
-    public void setStorage_id(int storage_id) {
-        this.storage_id = storage_id;
-    }
-    
-    
-    
 }

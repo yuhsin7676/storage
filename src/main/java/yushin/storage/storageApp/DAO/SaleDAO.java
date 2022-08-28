@@ -25,26 +25,6 @@ public class SaleDAO {
         
     }
     
-    public void update(Sale sale){
-        
-        Session session = HibernateSessionUtil.instance.openSession();
-        Transaction tx = session.beginTransaction();
-        session.update(sale);
-        tx.commit();
-        session.close();
-        
-    }
-    
-    public void delete(Sale sale){
-        
-        Session session = HibernateSessionUtil.instance.openSession();
-        Transaction tx = session.beginTransaction();
-        session.delete(sale);
-        tx.commit();
-        session.close();
-        
-    }
-    
     public List<Sale> findAll(){
         
         Session session = HibernateSessionUtil.instance.openSession();

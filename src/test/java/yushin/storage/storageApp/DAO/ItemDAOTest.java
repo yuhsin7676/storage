@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/UnitTests/JUnit5TestClass.java to edit this template
- */
 package yushin.storage.storageApp.DAO;
 
 import java.util.List;
@@ -11,24 +7,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import yushin.storage.storageApp.entities.Storage;
+import yushin.storage.storageApp.entities.Item;
 
 /**
  *
- * @author ilya
+ * @author Ilya
  */
-public class StorageDAOTest {
+public class ItemDAOTest {
     
     /**
-     * Проверяем, что StorageDAO.create(null) выбросит исключение.
+     * Проверяем, что ItemDAO.create(null) выбросит исключение.
      */
     @Test
     public void testCreateNull() {
 
         try{
             
-            // Попытаемся сохранить в БД несуществующий склад
-            StorageDAO.create(null);
+            // Попытаемся сохранить в БД несуществующий товар
+            ItemDAO.create(null);
             
             // Если прожует null, то тест не пройден
             fail();
@@ -44,9 +40,9 @@ public class StorageDAOTest {
      * Проверяем, что StorageDAO.create(null) выбросит исключение.
      */
     @Test
-    public void testUpdateUnexistStorage(){
+    public void testUpdateUnexistItem(){
         
-        StorageDAO.update(new Storage());
+        ItemDAO.update(new Item());
         
     }
 
@@ -56,40 +52,40 @@ public class StorageDAOTest {
     @Test
     public void testAll() {
         
-        // Построим новый склад
-        Storage storage = new Storage();
-        storage.setName("New storage");
+        // Создадим новый товар
+        Item item = new Item();
+        item.setName("New item");
         
         // И сохраним его в БД
-        StorageDAO.create(storage);
+        ItemDAO.create(item);
 
-        // Найдем этот склад
-        int id = storage.getId();
-        storage = StorageDAO.findById(id);
-        assertEquals(storage.getId(), id);
+        // Найдем этот товар
+        int id = item.getId();
+        item = ItemDAO.findById(id);
+        assertEquals(item.getId(), id);
         
         // Изменим его имя
-        storage.setName("Renamed storage");
-        StorageDAO.update(storage);
-        storage = StorageDAO.findById(id);
-        assertEquals(storage.getId(), id);
-        assertEquals("Renamed storage", storage.getName());
+        item.setName("Renamed item");
+        ItemDAO.update(item);
+        item = ItemDAO.findById(id);
+        assertEquals(item.getId(), id);
+        assertEquals("Renamed item", item.getName());
         
         // И удалим его
-        StorageDAO.delete(storage);
-        assertNull(StorageDAO.findById(id));
+        ItemDAO.delete(item);
+        assertNull(ItemDAO.findById(id));
         
     }
     
     /**
-     * Проверяем, что StorageDAO.findById(-1) вернет null.
+     * Проверяем, что ItemDAO.findById(-1) вернет null.
      */
     @Test
-    public void testFindUnexistendStorage() {
+    public void testFindUnexistendItem() {
 
         // Попытаемся сохранить в БД несуществующий склад
-        Storage storage = StorageDAO.findById(-1);
-        assertNull(storage);
+        Item item = ItemDAO.findById(-1);
+        assertNull(item);
         
     }
 
@@ -102,18 +98,18 @@ public class StorageDAOTest {
     public void testFindAll() {
         
         // Построим новый склад
-        Storage storage = new Storage();
-        storage.setName("New storage");
+        Item item = new Item();
+        item.setName("New item");
         
         // И сохраним его в БД
-        StorageDAO.create(storage);
-        int id = storage.getId();
+        ItemDAO.create(item);
+        int id = item.getId();
         
-        // Проверим, что добавленный склад окажется в списке 
+        // Проверим, что добавленный товар окажется в списке 
         // (пердполагается, что он будет в конце списка, что, вообще говоря, неверно)
-        List<Storage> storages = StorageDAO.findAll();
-        storage = storages.get(storages.size() - 1);
-        assertEquals(id, storage.getId());
+        List<Item> items = ItemDAO.findAll();
+        item = items.get(items.size() - 1);
+        assertEquals(id, item.getId());
         
     }
     

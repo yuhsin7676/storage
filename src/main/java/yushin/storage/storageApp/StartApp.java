@@ -34,7 +34,6 @@ public class StartApp {
         
         session.clear();
         
-        int a = 0;
         session.close();
         
         
@@ -72,4 +71,9 @@ public class StartApp {
         
     }
     
+}
+
+class A{
+    public int a = 0;
+    public int b = 0;
 }
