@@ -89,7 +89,9 @@ public class MoveDAOIT {
         assertEquals(1, itemsInStorage2.get(1).getNumber());
         assertTrue(itemsInStorage1.isEmpty());
         
-        // Удалим наши товары и склады
+        // Удалим наши доки, товары и склады
+        BuyDAO.delete(buy);
+        MoveDAO.delete(move);
         ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(1, storage_to).get(0));
         ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(2, storage_to).get(0));
         StorageDAO.delete(storage_1);
@@ -146,7 +148,9 @@ public class MoveDAOIT {
         assertEquals(1, itemsInStorage1.get(0).getNumber());
         assertTrue(itemsInStorage2.isEmpty());
         
-        // Удалим наши склады
+        // Удалим наши доки, товары и склады
+        BuyDAO.delete(buy);
+        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(1, storage_from).get(0));
         StorageDAO.delete(storage_1);
         StorageDAO.delete(storage_2);
         
@@ -201,6 +205,11 @@ public class MoveDAOIT {
         assertEquals(1, itemsInStorage1.size());
         assertEquals(1, itemsInStorage1.get(0).getNumber());
         
+        // Удалим наши доки, товары и склады
+        BuyDAO.delete(buy);
+        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(1, storage_id).get(0));
+        StorageDAO.delete(storage_1);
+        
     }
 
     /**
@@ -244,7 +253,8 @@ public class MoveDAOIT {
             System.out.println("Ура, выкинул исключение!");  
         }
         
-        // Удалим наши товары и склады
+        // Удалим наши доки, товары и склады
+        BuyDAO.delete(buy);
         ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(1, storage_to).get(0));
         StorageDAO.delete(storage_1);
         StorageDAO.delete(storage_2);
@@ -269,13 +279,13 @@ public class MoveDAOIT {
     public void testFindAll() {
         
         // Построим новый склад
-        Storage storage = new Storage();
-        StorageDAO.create(storage);
-        int storage_from = storage.getId();
+        Storage storage_1 = new Storage();
+        StorageDAO.create(storage_1);
+        int storage_from = storage_1.getId();
         
-        Storage storage2 = new Storage();
-        StorageDAO.create(storage2);
-        int storage_to = storage2.getId();
+        Storage storage_2 = new Storage();
+        StorageDAO.create(storage_2);
+        int storage_to = storage_2.getId();
         
         Buy buy = new Buy();
         buy.setStorage_id(storage_from);
@@ -287,8 +297,6 @@ public class MoveDAOIT {
         move.setStorage_from(storage_from);
         move.setStorage_to(storage_to); 
         move.setItems("[{id: 1, number: 3}]");
-        
-        // И сохраним его в БД
         MoveDAO.create(move);
         int id = move.getId();
         
@@ -296,13 +304,20 @@ public class MoveDAOIT {
         List<Move> moves = MoveDAO.findAll();
         boolean hasMove = false;
         for(int i = 0; i < moves.size(); i++){
-            move = moves.get(i);
-            if(move.getId() == id){
+            Move localMove = moves.get(i);
+            if(localMove.getId() == id){
                 hasMove = true;
                 break;
             }
         }
         assertTrue(hasMove);
+        
+        // Удалим наши доки, товары и склады
+        BuyDAO.delete(buy);
+        MoveDAO.delete(move);
+        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(1, storage_to).get(0));
+        StorageDAO.delete(storage_1);
+        StorageDAO.delete(storage_2);
         
     }
     

@@ -30,13 +30,8 @@ public class SaleDAOIT {
     public void testCreateNull() {
 
         try{
-            
-            // Попытаемся сохранить в БД несуществующий документ
             SaleDAO.create(null);
-            
-            // Если прожует null, то тест не пройден
             fail();
-            
         }
         catch(Exception e){
             System.out.println("Ура, выкинул исключение!");
@@ -86,7 +81,9 @@ public class SaleDAOIT {
         item = ItemDAO.findById(item_id);
         assertEquals(160, item.getPrice_sale());
         
-        // Удалим наш товар и склад
+        // Удалим наш документы, товар и склад
+        BuyDAO.delete(buy);
+        SaleDAO.delete(sale);
         ItemDAO.delete(item);
         StorageDAO.delete(storage);   
         
@@ -183,7 +180,7 @@ public class SaleDAOIT {
         
         // Создадим новый документ
         Sale sale = new Sale();
-        sale.setStorage_id(1);
+        sale.setStorage_id(storage_id);
         sale.setItems("[{id: 1, number: 3, price: 160 }]");
         SaleDAO.create(sale);
 
@@ -199,7 +196,8 @@ public class SaleDAOIT {
             System.out.println("Ура, выкинул исключение!");  
         }
         
-        // Удалим наш склад
+        // Удалим документ о покупке и склад
+        BuyDAO.delete(buy);
         StorageDAO.delete(storage);
         
         
@@ -244,13 +242,18 @@ public class SaleDAOIT {
         List<Sale> sales = SaleDAO.findAll();
         boolean hasSale = false;
         for(int i = 0; i < sales.size(); i++){
-            sale = sales.get(i);
-            if(sale.getId() == id){
+            Sale localSale = sales.get(i);
+            if(localSale.getId() == id){
                 hasSale = true;
                 break;
             }
         }
         assertTrue(hasSale);
+        
+        // Удалим доки
+        SaleDAO.delete(sale);
+        BuyDAO.delete(buy);
+        StorageDAO.delete(storage);
         
     }
     

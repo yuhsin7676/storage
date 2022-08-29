@@ -22,13 +22,8 @@ public class ItemDAOTest {
     public void testCreateNull() {
 
         try{
-            
-            // Попытаемся сохранить в БД несуществующий товар
             ItemDAO.create(null);
-            
-            // Если прожует null, то тест не пройден
             fail();
-            
         }
         catch(Exception e){
             System.out.println("Ура, выкинул исключение!");
@@ -41,9 +36,7 @@ public class ItemDAOTest {
      */
     @Test
     public void testUpdateUnexistItem(){
-        
         ItemDAO.update(new Item());
-        
     }
 
     /**
@@ -82,11 +75,8 @@ public class ItemDAOTest {
      */
     @Test
     public void testFindUnexistendItem() {
-
-        // Попытаемся сохранить в БД несуществующий склад
         Item item = ItemDAO.findById(-1);
         assertNull(item);
-        
     }
 
     /**
@@ -109,13 +99,16 @@ public class ItemDAOTest {
         List<Item> items = ItemDAO.findAll();
         boolean hasItem = false;
         for(int i = 0; i < items.size(); i++){
-            item = items.get(i);
-            if(item.getId() == id){
+            Item localItem = items.get(i);
+            if(localItem.getId() == id){
                 hasItem = true;
                 break;
             }
         }
         assertTrue(hasItem);
+        
+        // Удалим товар
+        ItemDAO.delete(item);
         
     }
     

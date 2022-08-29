@@ -91,8 +91,8 @@ public class ItemInStorageDAOTest {
         assertNull(ItemInStorageDAO.findById(id));
         
         // Заодно удалим склады
-        StorageDAO.update(storage1);
-        StorageDAO.update(storage2);
+        StorageDAO.delete(storage1);
+        StorageDAO.delete(storage2);
         
     }
     
@@ -102,7 +102,7 @@ public class ItemInStorageDAOTest {
     @Test
     public void testCreateItemInUnexistStorage() {
         
-        // Создадим новый товар
+        // Создадим новый товар (не должен создасться)
         ItemInStorage itemInStorage = new ItemInStorage();
         itemInStorage.setStorage_id(-1);
         itemInStorage.setItem_id(1);
@@ -146,8 +146,8 @@ public class ItemInStorageDAOTest {
         List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAll();
         boolean hasItemInStorage = false;
         for(int i = 0; i < itemsInStorage.size(); i++){
-            itemInStorage = itemsInStorage.get(i);
-            if(itemInStorage.getId() == id){
+            ItemInStorage localItemInStorage = itemsInStorage.get(i);
+            if(localItemInStorage.getId() == id){
                 hasItemInStorage = true;
                 break;
             }
@@ -162,35 +162,67 @@ public class ItemInStorageDAOTest {
     }
     
     /**
-     * Проверяем, что создание выдача списка товаров пройдет успешно.
-     * Также проверяется, что вновь добавленный склад в этом списке окажется
-     * Тест требует доработки!
+     * Проверяем, что выдача списка существующих товаров на существующем складе пройдет успешно.
+     * Также проверяется, что вновь добавленный товар в этом списке окажется
      */
     @Test
     public void testFindAllByItemIdStorage() {
         
-        List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAllByItemStorage(-1, -1);
-        assertEquals(0, itemsInStorage.size());
+        // Построим новый склад
+        Storage storage = new Storage();
+        StorageDAO.create(storage);
+        int storage_id = storage.getId();
         
+        // Создадим товар
+        ItemInStorage itemInStorage = new ItemInStorage();
+        itemInStorage.setItem_id(1);
+        itemInStorage.setNumber(1);
+        itemInStorage.setStorage_id(storage_id);
+        ItemInStorageDAO.create(itemInStorage);
+
         // Найдем товар
-        ItemInStorage itemInStorage;
-        itemsInStorage = ItemInStorageDAO.findAllByItemStorage(3, 3);
-        if(itemsInStorage.size() > 0)
-            itemInStorage = itemsInStorage.get(0);
-        else{
-            itemInStorage = new ItemInStorage();
-            itemInStorage.setItem_id(3);
-            itemInStorage.setStorage_id(3);       
-            ItemInStorageDAO.create(itemInStorage);
-        }
+        List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAllByItemStorage(1, storage_id);
+        itemInStorage = itemsInStorage.get(0);
         int id = itemInStorage.getId();
         
         // Проверим, что добавленный товар окажется в списке 
         // (пердполагается, что он будет единственным)
-        itemsInStorage = ItemInStorageDAO.findAllByItemStorage(3, 3);
+        itemsInStorage = ItemInStorageDAO.findAllByItemStorage(1, storage_id);
         itemInStorage = itemsInStorage.get(0);
         assertEquals(id, itemInStorage.getId());
         
+        // Удалим товар и склад
+        ItemInStorageDAO.delete(itemInStorage);
+        StorageDAO.delete(storage);
+        
     }
+    
+    /**
+     * Проверяем, что выдача списка НЕсуществующих товаров на существующем складе вернет пустой массив.
+     */
+    @Test
+    public void testFindAllByUnexistItemExistStorage() {
+        
+        // Построим новый склад
+        Storage storage = new Storage();
+        StorageDAO.create(storage);
+        int storage_id = storage.getId();
+        
+        List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAllByItemStorage(1, storage_id);
+        assertEquals(0, itemsInStorage.size());
+        
+        // Удалим склад
+        StorageDAO.delete(storage);
+    }
+    
+    /**
+     * Проверяем, что выдача списка НЕсуществующих товаров на НЕсуществующем складе вернет пустой массив.
+     */
+    @Test
+    public void testFindAllByUnexistItemUnexistStorage() {
+        List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAllByItemStorage(-1, -1);
+        assertEquals(0, itemsInStorage.size());
+    }
+        
     
 }

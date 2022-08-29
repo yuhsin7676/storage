@@ -79,15 +79,9 @@ public class BuyDAOTest {
         assertEquals(160, ItemDAO.findById(item_id1).getPrice_buy());
         assertEquals(170, ItemDAO.findById(item_id2).getPrice_buy());
         
-        // Продадим наши товары со склада (иначе склад не удалится)
-        Sale sale = new Sale();
-        sale.setStorage_id(storage_id); 
-        sale.setItems("["
-                + "{id: " + item_id1 + ", number: 3, price: 160 },"
-                + "{id: " + item_id2 + ", number: 3, price: 170 }"
-                + "]");
-        SaleDAO.create(sale);
-        SaleDAO.delete(sale);
+        // Удалим наши товары со склада (иначе склад не удалится)
+        ItemInStorageDAO.delete(itemInStorage1);
+        ItemInStorageDAO.delete(itemInStorage2);
         
         // Удалим наши товары и склад
         ItemDAO.delete(item1);
@@ -162,14 +156,9 @@ public class BuyDAOTest {
             System.out.println("Ура, выкинул исключение!");  
         }
         
-        // Продадим наши товары со склада (иначе склад не удалится)
-        Sale sale = new Sale();
-        sale.setStorage_id(storage_id); 
-        sale.setItems("[{id: 1, number: 3, price: 160 }]");
-        SaleDAO.create(sale);
-        SaleDAO.delete(sale);
-        
-        // Удалим наш склад
+        // Удалим наши товары и склад
+        ItemInStorage itemInStorage = ItemInStorageDAO.findAllByItemStorage(1, storage_id).get(0);
+        ItemInStorageDAO.delete(itemInStorage);
         StorageDAO.delete(storage);
         
     }
@@ -179,7 +168,7 @@ public class BuyDAOTest {
      */
     @Test
     public void testFindUnexistendBuy() {
-        Buy buy  = BuyDAO.findById(-1);
+        Buy buy = BuyDAO.findById(-1);
         assertNull(buy);
     }
 
@@ -206,22 +195,17 @@ public class BuyDAOTest {
         List<Buy> buys = BuyDAO.findAll();
         boolean hasBuy = false;
         for(int i = 0; i < buys.size(); i++){
-            buy = buys.get(i);
-            if(buy.getId() == id){
+            Buy localBuy = buys.get(i);
+            if(localBuy.getId() == id){
                 hasBuy = true;
                 break;
             }
         }
         assertTrue(hasBuy);
         
-        // Продадим наши товары со склада (иначе склад не удалится)
-        Sale sale = new Sale();
-        sale.setStorage_id(storage_id); 
-        sale.setItems("[{id: 1, number: 3, price: 160 }]");
-        SaleDAO.create(sale);
-        SaleDAO.delete(sale);
-        
-        // Удалим наш склад
+        // Удалим наши товары и склад
+        ItemInStorage itemInStorage = ItemInStorageDAO.findAllByItemStorage(1, storage_id).get(0);
+        ItemInStorageDAO.delete(itemInStorage);
         StorageDAO.delete(storage);
         
         // Удалим документ

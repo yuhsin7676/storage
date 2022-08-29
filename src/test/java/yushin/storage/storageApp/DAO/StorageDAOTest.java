@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import yushin.storage.storageApp.entities.Buy;
+import yushin.storage.storageApp.entities.ItemInStorage;
 import yushin.storage.storageApp.entities.Storage;
 
 /**
@@ -104,6 +105,12 @@ public class StorageDAOTest {
         StorageDAO.delete(storage);
         assertNotNull(StorageDAO.findById(id));
         
+        // Удалим наши доки, товары и склады
+        BuyDAO.delete(buy);
+        ItemInStorage itemInStorage = ItemInStorageDAO.findAllByItemStorage(1, id).get(0);
+        ItemInStorageDAO.delete(itemInStorage);
+        StorageDAO.delete(storage);
+        
     }
     
     /**
@@ -138,8 +145,8 @@ public class StorageDAOTest {
         List<Storage> storages = StorageDAO.findAll();
         boolean hasStorage = false;
         for(int i = 0; i < storages.size(); i++){
-            storage = storages.get(i);
-            if(storage.getId() == id){
+            Storage localStorage = storages.get(i);
+            if(localStorage.getId() == id){
                 hasStorage = true;
                 break;
             }
