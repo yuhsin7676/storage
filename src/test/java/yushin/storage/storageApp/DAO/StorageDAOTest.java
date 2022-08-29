@@ -28,13 +28,8 @@ public class StorageDAOTest {
     public void testCreateNull() {
 
         try{
-            
-            // Попытаемся сохранить в БД несуществующий склад
             StorageDAO.create(null);
-            
-            // Если прожует null, то тест не пройден
             fail();
-            
         }
         catch(Exception e){
             System.out.println("Ура, выкинул исключение!");
@@ -61,9 +56,8 @@ public class StorageDAOTest {
         // Построим новый склад
         Storage storage = new Storage();
         storage.setName("New storage");
-        
-        // И сохраним его в БД
-        StorageDAO.create(storage);
+        String result = StorageDAO.create(storage);
+        assertEquals("OK", result);
 
         // Найдем этот склад
         int id = storage.getId();
@@ -72,13 +66,15 @@ public class StorageDAOTest {
         
         // Изменим его имя
         storage.setName("Renamed storage");
-        StorageDAO.update(storage);
+        result = StorageDAO.update(storage);
+        assertEquals("OK", result);
         storage = StorageDAO.findById(id);
         assertEquals(storage.getId(), id);
         assertEquals("Renamed storage", storage.getName());
         
         // И удалим его
-        StorageDAO.delete(storage);
+        result = StorageDAO.delete(storage);
+        assertEquals("OK", result);
         assertNull(StorageDAO.findById(id));
         
     }
@@ -92,7 +88,8 @@ public class StorageDAOTest {
         // Построим новый склад
         Storage storage = new Storage();
         storage.setName("New storage");
-        StorageDAO.create(storage);
+        String result = StorageDAO.create(storage);
+        assertEquals("OK", result);
         int id = storage.getId();
         
         // Купим на этот склад товары
@@ -102,14 +99,16 @@ public class StorageDAOTest {
         BuyDAO.create(buy);
         
         // И удалим его (не должен удалиться)
-        StorageDAO.delete(storage);
+        result = StorageDAO.delete(storage);
+        assertNotEquals("OK", result);
         assertNotNull(StorageDAO.findById(id));
         
         // Удалим наши доки, товары и склады
         BuyDAO.delete(buy);
         ItemInStorage itemInStorage = ItemInStorageDAO.findAllByItemStorage(1, id).get(0);
         ItemInStorageDAO.delete(itemInStorage);
-        StorageDAO.delete(storage);
+        result = StorageDAO.delete(storage);
+        assertEquals("OK", result);
         
     }
     
@@ -118,17 +117,12 @@ public class StorageDAOTest {
      */
     @Test
     public void testFindUnexistendStorage() {
-
-        // Попытаемся сохранить в БД несуществующий склад
-        Storage storage = StorageDAO.findById(-1);
-        assertNull(storage);
-        
+        assertNull(StorageDAO.findById(-1));
     }
 
     /**
-     * Проверяем, что создание выдача списка складов пройдет успешно.
+     * Проверяем, что выдача списка складов пройдет успешно.
      * Также проверяется, что вновь добавленный склад в этом списке окажется
-     * Тест требует доработки!
      */
     @Test
     public void testFindAll() {
@@ -138,7 +132,8 @@ public class StorageDAOTest {
         storage.setName("New storage");
         
         // И сохраним его в БД
-        StorageDAO.create(storage);
+        String result = StorageDAO.create(storage);
+        assertEquals("OK", result);
         int id = storage.getId();
         
         // Проверим, что добавленный документ окажется в списке 
@@ -154,7 +149,8 @@ public class StorageDAOTest {
         assertTrue(hasStorage);
         
         // Удалим данный склад
-        StorageDAO.delete(storage);
+        result = StorageDAO.delete(storage);
+        assertEquals("OK", result);
         
     }
     

@@ -8,18 +8,22 @@ import yushin.storage.storageApp.util.HibernateSessionUtil;
 
 public class ItemInStorageDAO {
     
-    public static void create(ItemInStorage itemInStorage){
+    public static String create(ItemInStorage itemInStorage){
         
-        // Нельзя добавить товар на несуществующий склад
         if(StorageDAO.findById(itemInStorage.getStorage_id()) == null)
-            return;
+            return "Create failed: storage " + itemInStorage.getStorage_id() + " does not exist";
+        if(itemInStorage.getNumber() <= 0)
+            return "Create failed: number in itemInStorage must be positive";
         
         List<ItemInStorage> itemsInStorage = findAllByItemStorage(itemInStorage.getItem_id(), itemInStorage.getStorage_id());
         if (itemsInStorage.isEmpty()){
             Session session = HibernateSessionUtil.instance.openSession();
             session.save(itemInStorage);
             session.close();
+            return "OK";
         }
+        else
+            return "Create failed: itemStorage with item " + itemInStorage.getItem_id() + " and storage " + itemInStorage.getStorage_id() + " does not exist";
         
     }
     
@@ -32,11 +36,12 @@ public class ItemInStorageDAO {
         
     }
     
-    public static void update(ItemInStorage itemInStorage){
+    public static String update(ItemInStorage itemInStorage){
         
-        // Нельзя переместить товар на несуществующий склад
         if(StorageDAO.findById(itemInStorage.getStorage_id()) == null)
-            return;
+            return "Update failed: storage " + itemInStorage.getStorage_id() + " does not exist ";
+        if(itemInStorage.getNumber() <= 0)
+            return "Update failed: number in itemInStorage must be positive";
         
         if(findById(itemInStorage.getId()) != null){
             Session session = HibernateSessionUtil.instance.openSession();
@@ -44,17 +49,26 @@ public class ItemInStorageDAO {
             session.update(itemInStorage);
             tx.commit();
             session.close();
+            return "OK";
         }
+        else
+            return "Update failed: itemInStorage " + itemInStorage.getId() + " does not exist ";
         
     }
     
-    public static void delete(ItemInStorage itemInStorage){
+    public static String delete(ItemInStorage itemInStorage){
         
-        Session session = HibernateSessionUtil.instance.openSession();
-        Transaction tx = session.beginTransaction();
-        session.delete(itemInStorage);
-        tx.commit();
-        session.close();
+        try{
+            Session session = HibernateSessionUtil.instance.openSession();
+            Transaction tx = session.beginTransaction();
+            session.delete(itemInStorage);
+            tx.commit();
+            session.close();
+            return "OK";
+        }
+        catch(Exception e){
+            return e.getMessage();
+        }
         
     }
     

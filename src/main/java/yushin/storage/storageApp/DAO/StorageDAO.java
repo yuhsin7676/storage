@@ -10,11 +10,16 @@ import yushin.storage.storageApp.util.HibernateSessionUtil;
 
 public class StorageDAO {
     
-    public static void create(Storage storage){
+    public static String create(Storage storage){
         
-        Session session = HibernateSessionUtil.instance.openSession();
-        session.save(storage);
-        session.close();
+        if(findById(storage.getId()) == null){
+            Session session = HibernateSessionUtil.instance.openSession();
+            session.save(storage);
+            session.close();
+            return "OK";
+        }
+        else
+            return "Create failed: item " + storage.getId() + " already exist";
         
     }
     
@@ -27,7 +32,7 @@ public class StorageDAO {
         
     }
     
-    public static void update(Storage storage){
+    public static String update(Storage storage){
         
         if(findById(storage.getId()) != null){
             Session session = HibernateSessionUtil.instance.openSession();
@@ -35,19 +40,30 @@ public class StorageDAO {
             session.update(storage);
             tx.commit();
             session.close();
+            return "OK";
         }
+        else
+            return "Update failed: item " + storage.getId() + " does not exist";
         
     }
     
-    public static void delete(Storage storage){
+    public static String delete(Storage storage){
         
         if(getItems(storage).isEmpty()){
-            Session session = HibernateSessionUtil.instance.openSession();
-            Transaction tx = session.beginTransaction();
-            session.delete(storage);
-            tx.commit();
-            session.close();
+            try{
+                Session session = HibernateSessionUtil.instance.openSession();
+                Transaction tx = session.beginTransaction();
+                session.delete(storage);
+                tx.commit();
+                session.close();
+                return "OK";
+            }
+            catch(Exception e){
+                return e.getMessage();
+            }
         }
+        else
+            return "Delete failed: storage contain items";
         
     }
     

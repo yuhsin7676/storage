@@ -8,11 +8,16 @@ import yushin.storage.storageApp.util.HibernateSessionUtil;
 
 public class ItemDAO {
     
-    public static void create(Item item){
+    public static String create(Item item){
         
-        Session session = HibernateSessionUtil.instance.openSession();
-        session.save(item);
-        session.close();
+        if(findById(item.getId()) == null){
+            Session session = HibernateSessionUtil.instance.openSession();
+            session.save(item);
+            session.close();
+            return "OK";
+        }
+        else
+            return "Create failed: item " + item.getId() + " already exist";
         
     }
     
@@ -25,7 +30,7 @@ public class ItemDAO {
         
     }
     
-    public static void update(Item item){
+    public static String update(Item item){
         
         if(findById(item.getId()) != null){
             Session session = HibernateSessionUtil.instance.openSession();
@@ -33,17 +38,26 @@ public class ItemDAO {
             session.update(item);
             tx.commit();
             session.close();
+            return "OK";
         }
+        else
+            return "Update failed: item " + item.getId() + " does not exist";
         
     }
     
-    public static void delete(Item item){
+    public static String delete(Item item){
         
-        Session session = HibernateSessionUtil.instance.openSession();
-        Transaction tx = session.beginTransaction();
-        session.delete(item);
-        tx.commit();
-        session.close();
+        try{
+            Session session = HibernateSessionUtil.instance.openSession();
+            Transaction tx = session.beginTransaction();
+            session.delete(item);
+            tx.commit();
+            session.close();
+            return "OK";
+        }
+        catch(Exception e){
+            return e.getMessage();
+        }
         
     }
     

@@ -21,7 +21,7 @@ import yushin.storage.storageApp.entities.Storage;
  *
  * @author Ilya
  */
-public class MoveDAOIT {
+public class MoveDAOTest {
     
     /**
      * Проверяем, что StorageDAO.create(null) выбросит исключение.
@@ -35,6 +35,62 @@ public class MoveDAOIT {
         catch(Exception e){
             System.out.println("Ура, выкинул исключение!");
         }
+    }
+    
+    /**
+     * Проверяем, MoveDAO.create() не рухнет при некорректных данных.
+     */
+    @Test
+    public void testCreateBuyWithIncorrectItems() {
+        
+        // Построим 2 новых склада (чтобы исключить ошибку отсутствия таковых)
+        Storage storage1 = new Storage();
+        StorageDAO.create(storage1);
+        int storage_from = storage1.getId();
+        
+        Storage storage2 = new Storage();
+        StorageDAO.create(storage2);
+        int storage_to = storage2.getId();
+        
+        // И закинем на 1-й товары
+        Buy buy = new Buy();
+        buy.setStorage_id(storage_from);
+        buy.setItems("[{id: -1, number: 3, price: 150}]");
+        BuyDAO.create(buy);
+        
+        // Создадим новый документ с синтаксической ошибкой в items
+        Move move = new Move();
+        move.setStorage_from(storage_from);
+        move.setStorage_to(storage_to);
+        move.setItems("[{id: -1, number: 3}");
+        String result = MoveDAO.create(move);
+        assertNotEquals("OK", result);
+        assertTrue(move.getId() == 0);
+        
+        // Создадим новый документ со строкой вместо числа в number 
+        move.setItems("[{id: -1, number: str}]");
+        result = MoveDAO.create(move);
+        assertNotEquals("OK", result);
+        assertTrue(move.getId() == 0);
+        
+        // Создадим новый документ с отрицательным числом перемещаемых товаров
+        move.setItems("[{id: -1, number: -3}]");
+        result = MoveDAO.create(move);
+        assertNotEquals("OK", result);
+        assertTrue(move.getId() == 0);
+        
+        // Создадим новый документ с абракадаброй
+        move.setItems("qwer3rfsdf");
+        result = MoveDAO.create(move);
+        assertNotEquals("OK", result);
+        assertTrue(move.getId() == 0);
+        
+        // Удалим доки, товары и склад
+        BuyDAO.delete(buy);
+        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(-1, storage_from).get(0));
+        StorageDAO.delete(storage1);
+        StorageDAO.delete(storage2);
+        
     }
     
     /**
@@ -58,8 +114,8 @@ public class MoveDAOIT {
         Buy buy = new Buy();
         buy.setStorage_id(storage_from);
         buy.setItems("["
-                + "{id: 1, number: 1, price: 150},"
-                + "{id: 2, number: 1, price: 150}"
+                + "{id: -1, number: 1, price: 150},"
+                + "{id: -2, number: 1, price: 150}"
                 + "]");
         BuyDAO.create(buy);
         
@@ -74,12 +130,11 @@ public class MoveDAOIT {
         Move move = new Move();
         move.setStorage_from(storage_from); 
         move.setStorage_to(storage_to);
-        move.setItems("[{id: 1, number: 1}, "
-                + "{id: 2, number: 1}"
+        move.setItems("[{id: -1, number: 1}, "
+                + "{id: -2, number: 1}"
                 + "]");
-        
-        // И сохраним его в БД
-        MoveDAO.create(move);
+        String result = MoveDAO.create(move);
+        assertEquals("OK", result);
         assertFalse(move.getId() == 0);
         
         // Проверим, что на 1-м вновь созданном складе нет товаров, а на 2-м - есть
@@ -91,9 +146,10 @@ public class MoveDAOIT {
         
         // Удалим наши доки, товары и склады
         BuyDAO.delete(buy);
-        MoveDAO.delete(move);
-        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(1, storage_to).get(0));
-        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(2, storage_to).get(0));
+        result = MoveDAO.delete(move);
+        assertEquals("OK", result);
+        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(-1, storage_to).get(0));
+        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(-2, storage_to).get(0));
         StorageDAO.delete(storage_1);
         StorageDAO.delete(storage_2);
         
@@ -120,7 +176,7 @@ public class MoveDAOIT {
         // Добавим товары на первый склад
         Buy buy = new Buy();
         buy.setStorage_id(storage_from);
-        buy.setItems("[{id: 1, number: 1, price: 150}]");
+        buy.setItems("[{id: -1, number: 1, price: 150}]");
         BuyDAO.create(buy);
         
         // Проверим, что на 1-м вновь созданном складе есть 1-й товар и нет 2-го, а на 2-м - нет
@@ -134,11 +190,10 @@ public class MoveDAOIT {
         Move move = new Move();
         move.setStorage_from(storage_from);
         move.setStorage_to(storage_to);
-        move.setItems("[{id: 1, number: 1}]");
-        move.setItems("[{id: 2, number: 1}]");
-        
-        // И сохраним его в БД (сохранение не должно удасться)
-        MoveDAO.create(move);
+        move.setItems("[{id: -1, number: 1}]");
+        move.setItems("[{id: -2, number: 1}]");
+        String result = MoveDAO.create(move);
+        assertNotEquals("OK", result);
         assertTrue(move.getId() == 0);
         
         // Проверим, что в ItemInStorage нет изменений
@@ -150,7 +205,7 @@ public class MoveDAOIT {
         
         // Удалим наши доки, товары и склады
         BuyDAO.delete(buy);
-        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(1, storage_from).get(0));
+        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(-1, storage_from).get(0));
         StorageDAO.delete(storage_1);
         StorageDAO.delete(storage_2);
         
@@ -172,7 +227,7 @@ public class MoveDAOIT {
         // Добавим товары на первый склад
         Buy buy = new Buy();
         buy.setStorage_id(storage_id);
-        buy.setItems("[{id: 1, number: 1, price: 150}]");
+        buy.setItems("[{id: -1, number: 1, price: 150}]");
         BuyDAO.create(buy);
         
         // Проверим, что на вновь созданном складе есть 1-й товар
@@ -184,8 +239,9 @@ public class MoveDAOIT {
         Move move = new Move();
         move.setStorage_from(-1);
         move.setStorage_to(storage_id); 
-        move.setItems("[{id: 1, number: 1}]");
-        MoveDAO.create(move);
+        move.setItems("[{id: -1, number: 1}]");
+        String result = MoveDAO.create(move);
+        assertNotEquals("OK", result);
         assertTrue(move.getId() == 0);
         
         // Проверим, что ничего не изменилось
@@ -196,8 +252,9 @@ public class MoveDAOIT {
         move = new Move();
         move.setStorage_from(storage_id);
         move.setStorage_to(-1); 
-        move.setItems("[{id: 1, number: 1}]");
-        MoveDAO.create(move);
+        move.setItems("[{id: -1, number: 1}]");
+        result = MoveDAO.create(move);
+        assertNotEquals("OK", result);
         assertTrue(move.getId() == 0);
         
         // Проверим, что ничего не изменилось
@@ -207,7 +264,7 @@ public class MoveDAOIT {
         
         // Удалим наши доки, товары и склады
         BuyDAO.delete(buy);
-        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(1, storage_id).get(0));
+        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(-1, storage_id).get(0));
         StorageDAO.delete(storage_1);
         
     }
@@ -231,31 +288,28 @@ public class MoveDAOIT {
         // Закупим 3 товара на 1-й склад
         Buy buy = new Buy();
         buy.setStorage_id(storage_from);
-        buy.setItems("[{id: 1, number: 3, price: 160}]");
+        buy.setItems("[{id: -1, number: 3, price: 160}]");
         BuyDAO.create(buy);
         
         // Создадим новый документ
         Move move = new Move();
         move.setStorage_from(storage_from);
         move.setStorage_to(storage_to);
-        move.setItems("[{id: 1, number: 3}]");
-        MoveDAO.create(move);
+        move.setItems("[{id: -1, number: 3}]");
+        String result = MoveDAO.create(move);
+        assertEquals("OK", result);
         
         // Удалим документ
-        MoveDAO.delete(move);
+        result = MoveDAO.delete(move);
+        assertEquals("OK", result);
         
         // Еще раз удалим документ
-        try{
-            MoveDAO.delete(move);
-            fail("Тест не пройден: повторный MoveDAO.delete() не выбросил исключение");
-        }
-        catch(Exception e){
-            System.out.println("Ура, выкинул исключение!");  
-        }
+        result = MoveDAO.delete(move);
+        assertNotEquals("OK", result);
         
         // Удалим наши доки, товары и склады
         BuyDAO.delete(buy);
-        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(1, storage_to).get(0));
+        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(-1, storage_to).get(0));
         StorageDAO.delete(storage_1);
         StorageDAO.delete(storage_2);
         
@@ -266,8 +320,7 @@ public class MoveDAOIT {
      */
     @Test
     public void testFindUnexistendMove() {
-        Move move  = MoveDAO.findById(-1);
-        assertNull(move);
+        assertNull(MoveDAO.findById(-1));
     }
 
     /**
@@ -289,15 +342,16 @@ public class MoveDAOIT {
         
         Buy buy = new Buy();
         buy.setStorage_id(storage_from);
-        buy.setItems("[{id: 1, number: 3, price: 160 }]");
+        buy.setItems("[{id: -1, number: 3, price: 160 }]");
         BuyDAO.create(buy);
         
         // Создадим новый документ
         Move move = new Move();
         move.setStorage_from(storage_from);
         move.setStorage_to(storage_to); 
-        move.setItems("[{id: 1, number: 3}]");
-        MoveDAO.create(move);
+        move.setItems("[{id: -1, number: 3}]");
+        String result = MoveDAO.create(move);
+        assertEquals("OK", result);
         int id = move.getId();
         
         // Проверим, что добавленный документ окажется в списке 
@@ -314,8 +368,9 @@ public class MoveDAOIT {
         
         // Удалим наши доки, товары и склады
         BuyDAO.delete(buy);
-        MoveDAO.delete(move);
-        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(1, storage_to).get(0));
+        result = MoveDAO.delete(move);
+        assertEquals("OK", result);
+        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(-1, storage_to).get(0));
         StorageDAO.delete(storage_1);
         StorageDAO.delete(storage_2);
         

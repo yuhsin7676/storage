@@ -21,7 +21,7 @@ import yushin.storage.storageApp.entities.Storage;
  *
  * @author Ilya
  */
-public class SaleDAOIT {
+public class SaleDAOTest {
     
     /**
      * Проверяем, что StorageDAO.create(null) выбросит исключение.
@@ -36,6 +36,56 @@ public class SaleDAOIT {
         catch(Exception e){
             System.out.println("Ура, выкинул исключение!");
         }
+        
+    }
+    
+    /**
+     * Проверяем, SaleDAO.create() не рухнет при некорректных данных.
+     */
+    @Test
+    public void testCreateBuyWithIncorrectItems() {
+        
+        // Построим новый склад (чтобы исключить ошибку отсутствия такового)
+        Storage storage = new Storage();
+        StorageDAO.create(storage);
+        int storage_id = storage.getId();
+        
+        // И закинем туда товары
+        Buy buy = new Buy();
+        buy.setStorage_id(storage_id);
+        buy.setItems("[{id: -1, number: 3, price: 150}]");
+        BuyDAO.create(buy);
+        
+        // Создадим новый документ с синтаксической ошибкой в items
+        Sale sale = new Sale();
+        sale.setStorage_id(storage_id); 
+        sale.setItems("[{id: -1, number: 3, price: 160 }");
+        String result = SaleDAO.create(sale);
+        assertNotEquals("OK", result);
+        assertTrue(sale.getId() == 0);
+        
+        // Создадим новый документ со строкой вместо числа в price 
+        sale.setItems("[{id: -1, number: 3, price: str }]");
+        result = SaleDAO.create(sale);
+        assertNotEquals("OK", result);
+        assertTrue(sale.getId() == 0);
+        
+        // Создадим новый документ с отрицательным числом покупаемых товаров
+        sale.setItems("[{id: -1, number: -3, price: 160 }]");
+        result = SaleDAO.create(sale);
+        assertNotEquals("OK", result);
+        assertTrue(sale.getId() == 0);
+        
+        // Создадим новый документ с абракадаброй
+        sale.setItems("qwer3rfsdf");
+        result = SaleDAO.create(sale);
+        assertNotEquals("OK", result);
+        assertTrue(sale.getId() == 0);
+        
+        // Удалим доки, товары и склад
+        BuyDAO.delete(buy);
+        ItemInStorageDAO.delete(ItemInStorageDAO.findAllByItemStorage(-1, storage_id).get(0));
+        StorageDAO.delete(storage);
         
     }
     
@@ -72,7 +122,8 @@ public class SaleDAOIT {
         Sale sale = new Sale();
         sale.setStorage_id(storage_id); 
         sale.setItems("[{id: " + item_id + ", number: 1, price: 160 }]");
-        SaleDAO.create(sale);
+        String result = SaleDAO.create(sale);
+        assertEquals("OK", result);
         assertFalse(sale.getId() == 0);
         
         // Проверим, что на вновь созданном складе больше нет данных товаров,
@@ -83,7 +134,8 @@ public class SaleDAOIT {
         
         // Удалим наш документы, товар и склад
         BuyDAO.delete(buy);
-        SaleDAO.delete(sale);
+        result = SaleDAO.delete(sale);
+        assertEquals("OK", result);
         ItemDAO.delete(item);
         StorageDAO.delete(storage);   
         
@@ -116,7 +168,8 @@ public class SaleDAOIT {
         Sale sale = new Sale();
         sale.setStorage_id(storage_id); 
         sale.setItems("[{id: " + item_id + ", number: 1, price: 160 }]");
-        SaleDAO.create(sale);
+        String result = SaleDAO.create(sale);
+        assertNotEquals("OK", result);
         assertTrue(sale.getId() == 0);
         
         // Проверим, что изменений нет
@@ -147,7 +200,8 @@ public class SaleDAOIT {
         Sale sale = new Sale();
         sale.setStorage_id(-1); 
         sale.setItems("[{id: " + item_id + ", number: 3, price: 160 }]");
-        SaleDAO.create(sale);
+        String result = SaleDAO.create(sale);
+        assertNotEquals("OK", result);
         assertTrue(sale.getId() == 0);
         
         // Проверим, что изменений нет
@@ -175,26 +229,23 @@ public class SaleDAOIT {
         // в тестах выше мы создавали товар в номенклатуре исключительно для проверки изменений цены
         Buy buy = new Buy();
         buy.setStorage_id(storage_id);
-        buy.setItems("[{id: 1, number: 3, price: 150 }]");
+        buy.setItems("[{id: -1, number: 3, price: 150 }]");
         BuyDAO.create(buy);
         
         // Создадим новый документ
         Sale sale = new Sale();
         sale.setStorage_id(storage_id);
-        sale.setItems("[{id: 1, number: 3, price: 160 }]");
-        SaleDAO.create(sale);
+        sale.setItems("[{id: -1, number: 3, price: 160 }]");
+        String result = SaleDAO.create(sale);
+        assertEquals("OK", result);
 
         // Удалим документ
-        SaleDAO.delete(sale);
+        result = SaleDAO.delete(sale);
+        assertEquals("OK", result);
         
         // Еще раз удалим документ
-        try{
-            SaleDAO.delete(sale);
-            fail("Тест не пройден: повторный SaleDAO.delete() не выбросил исключение");
-        }
-        catch(Exception e){
-            System.out.println("Ура, выкинул исключение!");  
-        }
+        result = SaleDAO.delete(sale);
+        assertNotEquals("OK", result);
         
         // Удалим документ о покупке и склад
         BuyDAO.delete(buy);
@@ -208,8 +259,7 @@ public class SaleDAOIT {
      */
     @Test
     public void testFindUnexistendSale() {
-        Sale sale  = SaleDAO.findById(-1);
-        assertNull(sale);
+        assertNull(SaleDAO.findById(-1));
     }
 
     /**
@@ -228,14 +278,15 @@ public class SaleDAOIT {
         // Купим товар и закинем его на storage_id-й склад
         Buy buy = new Buy();
         buy.setStorage_id(storage_id);
-        buy.setItems("[{id: 1, number: 3, price: 150 }]");
+        buy.setItems("[{id: -1, number: 3, price: 150 }]");
         BuyDAO.create(buy);
         
         // Создадим новый документ
         Sale sale = new Sale();
         sale.setStorage_id(storage_id); 
-        sale.setItems("[{id: 1, number: 3, price: 160 }]");
-        SaleDAO.create(sale);
+        sale.setItems("[{id: -1, number: 3, price: 160 }]");
+        String result = SaleDAO.create(sale);
+        assertEquals("OK", result);
         int id = sale.getId();
         
         // Проверим, что добавленный документ окажется в списке 
@@ -251,7 +302,8 @@ public class SaleDAOIT {
         assertTrue(hasSale);
         
         // Удалим доки
-        SaleDAO.delete(sale);
+        result = SaleDAO.delete(sale);
+        assertEquals("OK", result);
         BuyDAO.delete(buy);
         StorageDAO.delete(storage);
         

@@ -16,43 +16,53 @@ import yushin.storage.storageApp.util.HibernateSessionUtil;
 
 public class BuyDAO {
     
-    public static void create(Buy buy){
+    public static String create(Buy buy){
         
         Session session = HibernateSessionUtil.instance.openSession();
-        
         Storage storage = StorageDAO.findById(buy.getStorage_id());
-        
-        // Если склада, указанного в документе нет, то выходим из функции
         if(storage == null)
-            return;
+            return "Create failed: storage " + buy.getStorage_id() + " does not exist";
         
-        Type type = new TypeToken<ArrayList<Map<String, Integer>>>(){}.getType();
-        ArrayList<Map<String, Integer>> items = new Gson().fromJson(buy.getItems(), type);
-        for(int i = 0; i < items.size(); i++){
-            List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAllByItemStorage(items.get(i).get("id"), buy.getStorage_id());
-            if(!itemsInStorage.isEmpty()){
-                ItemInStorage itemInStorage = itemsInStorage.get(0);
-                itemInStorage.setNumber(itemInStorage.getNumber() + items.get(i).get("number"));
-                ItemInStorageDAO.update(itemInStorage);
-            }
-            else{
-                ItemInStorage itemInStorage = new ItemInStorage();
-                itemInStorage.setItem_id(items.get(i).get("id"));
-                itemInStorage.setNumber(items.get(i).get("number"));
-                itemInStorage.setStorage_id(buy.getStorage_id());
-                ItemInStorageDAO.create(itemInStorage);
-            }
-            
-            Item item = ItemDAO.findById(items.get(i).get("id"));
-            if(item != null){
-                item.setPrice_buy(items.get(i).get("price"));
-                ItemDAO.update(item);
-            }
+        try{
+            // некорректный json вызовет Exception
+            Type type = new TypeToken<ArrayList<Map<String, Integer>>>(){}.getType();
+            ArrayList<Map<String, Integer>> items = new Gson().fromJson(buy.getItems(), type);
 
+            Transaction tx = session.beginTransaction();
+            for(int i = 0; i < items.size(); i++){
+                List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAllByItemStorage(items.get(i).get("id"), buy.getStorage_id());
+                if(items.get(i).get("number") <= 0){
+                    tx.rollback();
+                    return "Create failed: number of items in buy must be positive ";
+                } 
+                else if(!itemsInStorage.isEmpty()){
+                    ItemInStorage itemInStorage = itemsInStorage.get(0);
+                    itemInStorage.setNumber(itemInStorage.getNumber() + items.get(i).get("number"));
+                    ItemInStorageDAO.update(itemInStorage);
+                }
+                else{
+                    ItemInStorage itemInStorage = new ItemInStorage();
+                    itemInStorage.setItem_id(items.get(i).get("id"));
+                    itemInStorage.setNumber(items.get(i).get("number"));
+                    itemInStorage.setStorage_id(buy.getStorage_id());
+                    ItemInStorageDAO.create(itemInStorage);
+                }
+
+                Item item = ItemDAO.findById(items.get(i).get("id"));
+                if(item != null){
+                    item.setPrice_buy(items.get(i).get("price"));
+                    ItemDAO.update(item);
+                }
+
+            }
+            tx.commit();  
+            session.save(buy);
+            session.close();
+            return "OK";
         }
-            
-        session.save(buy);
-        session.close();
+        catch(Exception e){
+            return e.getMessage();
+        }
         
     }
     
@@ -65,13 +75,19 @@ public class BuyDAO {
         
     }
     
-    public static void delete(Buy buy){
+    public static String delete(Buy buy){
         
-        Session session = HibernateSessionUtil.instance.openSession();
-        Transaction tx = session.beginTransaction();
-        session.delete(buy);
-        tx.commit();
-        session.close();
+        try{
+            Session session = HibernateSessionUtil.instance.openSession();
+            Transaction tx = session.beginTransaction();
+            session.delete(buy);
+            tx.commit();
+            session.close();
+            return "OK";
+        }
+        catch(Exception e){
+            return e.getMessage();
+        }
         
     }
     

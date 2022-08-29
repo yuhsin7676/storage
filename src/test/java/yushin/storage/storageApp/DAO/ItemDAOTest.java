@@ -36,11 +36,12 @@ public class ItemDAOTest {
      */
     @Test
     public void testUpdateUnexistItem(){
-        ItemDAO.update(new Item());
+        String result = ItemDAO.update(new Item());
+        assertNotEquals("OK", result);
     }
 
     /**
-     * Проверяем, что создание, изменение и удаление склада пройдет успешно.
+     * Проверяем, что создание, изменение и удаление товара пройдет успешно.
      */
     @Test
     public void testAll() {
@@ -50,7 +51,8 @@ public class ItemDAOTest {
         item.setName("New item");
         
         // И сохраним его в БД
-        ItemDAO.create(item);
+        String result = ItemDAO.create(item);
+        assertEquals("OK", result);
 
         // Найдем этот товар
         int id = item.getId();
@@ -59,13 +61,16 @@ public class ItemDAOTest {
         
         // Изменим его имя
         item.setName("Renamed item");
-        ItemDAO.update(item);
+        result = ItemDAO.update(item);
+        assertEquals("OK", result);
+        
         item = ItemDAO.findById(id);
         assertEquals(item.getId(), id);
         assertEquals("Renamed item", item.getName());
         
         // И удалим его
-        ItemDAO.delete(item);
+        result = ItemDAO.delete(item);
+        assertEquals("OK", result);
         assertNull(ItemDAO.findById(id));
         
     }
@@ -75,8 +80,7 @@ public class ItemDAOTest {
      */
     @Test
     public void testFindUnexistendItem() {
-        Item item = ItemDAO.findById(-1);
-        assertNull(item);
+        assertNull(ItemDAO.findById(-1));
     }
 
     /**
@@ -90,9 +94,8 @@ public class ItemDAOTest {
         // Построим новый склад
         Item item = new Item();
         item.setName("New item");
-        
-        // И сохраним его в БД
-        ItemDAO.create(item);
+        String result = ItemDAO.create(item);
+        assertEquals("OK", result);
         int id = item.getId();
         
         // Проверим, что добавленный документ окажется в списке 
@@ -108,7 +111,8 @@ public class ItemDAOTest {
         assertTrue(hasItem);
         
         // Удалим товар
-        ItemDAO.delete(item);
+        result = ItemDAO.delete(item);
+        assertEquals("OK", result);
         
     }
     

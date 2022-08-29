@@ -36,11 +36,12 @@ public class ItemInStorageDAOTest {
     }
     
     /**
-     * Проверяем, что ItemInStorage.update(new ItemInStorage()) выбросит исключение.
+     * Проверяем, что ItemInStorage.update(new ItemInStorage()) завершится неудачей.
      */
     @Test
     public void testUpdateUnexistItemInStorage(){
-        ItemInStorageDAO.update(new ItemInStorage());
+        String result = ItemInStorageDAO.update(new ItemInStorage());
+        assertNotEquals("OK", result);
     }
 
     /**
@@ -63,9 +64,10 @@ public class ItemInStorageDAOTest {
         // Создадим новый товар
         ItemInStorage itemInStorage = new ItemInStorage();
         itemInStorage.setStorage_id(storage_id1);
-        itemInStorage.setItem_id(1);
+        itemInStorage.setItem_id(-1);
         itemInStorage.setNumber(1);
-        ItemInStorageDAO.create(itemInStorage);
+        String result = ItemInStorageDAO.create(itemInStorage);
+        assertEquals("OK", result);
 
         // Найдем этот товар
         int id = itemInStorage.getId();
@@ -74,20 +76,23 @@ public class ItemInStorageDAOTest {
         
         // Изменим его количество
         itemInStorage.setNumber(3);
-        ItemInStorageDAO.update(itemInStorage);
+        result = ItemInStorageDAO.update(itemInStorage);
+        assertEquals("OK", result);
         itemInStorage = ItemInStorageDAO.findById(id);
         assertEquals(itemInStorage.getId(), id);
         assertEquals(3, itemInStorage.getNumber());
         
         // Изменим его номер склада
         itemInStorage.setStorage_id(storage_id2);
-        ItemInStorageDAO.update(itemInStorage);
+        result = ItemInStorageDAO.update(itemInStorage);
+        assertEquals("OK", result);
         itemInStorage = ItemInStorageDAO.findById(id);
         assertEquals(itemInStorage.getId(), id);
         assertEquals(storage_id2, itemInStorage.getStorage_id());
         
         // И удалим его
-        ItemInStorageDAO.delete(itemInStorage);
+        result = ItemInStorageDAO.delete(itemInStorage);
+        assertEquals("OK", result);
         assertNull(ItemInStorageDAO.findById(id));
         
         // Заодно удалим склады
@@ -97,7 +102,7 @@ public class ItemInStorageDAOTest {
     }
     
     /**
-     * Проверяем, что создание товара на несуществующем складе завершится неудачей.
+     * Проверяем, что создание товара на НЕсуществующем складе завершится неудачей.
      */
     @Test
     public void testCreateItemInUnexistStorage() {
@@ -105,9 +110,10 @@ public class ItemInStorageDAOTest {
         // Создадим новый товар (не должен создасться)
         ItemInStorage itemInStorage = new ItemInStorage();
         itemInStorage.setStorage_id(-1);
-        itemInStorage.setItem_id(1);
+        itemInStorage.setItem_id(-1);
         itemInStorage.setNumber(1);
-        ItemInStorageDAO.create(itemInStorage);
+        String result = ItemInStorageDAO.create(itemInStorage);
+        assertNotEquals("OK", result);
         assertEquals(0, itemInStorage.getId());
         
     }
@@ -117,8 +123,7 @@ public class ItemInStorageDAOTest {
      */
     @Test
     public void testFindUnexistendItemInStorage() {
-        ItemInStorage itemInStorage = ItemInStorageDAO.findById(-1);
-        assertNull(itemInStorage);
+        assertNull(ItemInStorageDAO.findById(-1));
     }
 
     /**
@@ -136,10 +141,11 @@ public class ItemInStorageDAOTest {
         
         // Создадим новый товар
         ItemInStorage itemInStorage = new ItemInStorage();
-        itemInStorage.setItem_id(1);
+        itemInStorage.setItem_id(-1);
         itemInStorage.setNumber(2);
         itemInStorage.setStorage_id(storage_id);
-        ItemInStorageDAO.create(itemInStorage);
+        String result = ItemInStorageDAO.create(itemInStorage);
+        assertEquals("OK", result);
         int id = itemInStorage.getId();
         
         // Проверим, что добавленный товар окажется в списке 
@@ -155,8 +161,8 @@ public class ItemInStorageDAOTest {
         assertTrue(hasItemInStorage);
         
         // Удалим данный товар и склад
-        itemInStorage = ItemInStorageDAO.findById(id);
-        ItemInStorageDAO.delete(itemInStorage);
+        result = ItemInStorageDAO.delete(itemInStorage);
+        assertEquals("OK", result);
         StorageDAO.delete(storage);
         
     }
@@ -175,24 +181,26 @@ public class ItemInStorageDAOTest {
         
         // Создадим товар
         ItemInStorage itemInStorage = new ItemInStorage();
-        itemInStorage.setItem_id(1);
+        itemInStorage.setItem_id(-1);
         itemInStorage.setNumber(1);
         itemInStorage.setStorage_id(storage_id);
-        ItemInStorageDAO.create(itemInStorage);
+        String result = ItemInStorageDAO.create(itemInStorage);
+        assertEquals("OK", result);
 
         // Найдем товар
-        List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAllByItemStorage(1, storage_id);
+        List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAllByItemStorage(-1, storage_id);
         itemInStorage = itemsInStorage.get(0);
         int id = itemInStorage.getId();
         
         // Проверим, что добавленный товар окажется в списке 
         // (пердполагается, что он будет единственным)
-        itemsInStorage = ItemInStorageDAO.findAllByItemStorage(1, storage_id);
+        itemsInStorage = ItemInStorageDAO.findAllByItemStorage(-1, storage_id);
         itemInStorage = itemsInStorage.get(0);
         assertEquals(id, itemInStorage.getId());
         
         // Удалим товар и склад
-        ItemInStorageDAO.delete(itemInStorage);
+        result = ItemInStorageDAO.delete(itemInStorage);
+        assertEquals("OK", result);
         StorageDAO.delete(storage);
         
     }

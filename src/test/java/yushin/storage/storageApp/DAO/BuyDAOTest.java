@@ -5,16 +5,11 @@
 package yushin.storage.storageApp.DAO;
 
 import java.util.List;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import yushin.storage.storageApp.entities.Buy;
 import yushin.storage.storageApp.entities.Item;
 import yushin.storage.storageApp.entities.ItemInStorage;
-import yushin.storage.storageApp.entities.Sale;
 import yushin.storage.storageApp.entities.Storage;
 
 /**
@@ -35,6 +30,48 @@ public class BuyDAOTest {
         catch(Exception e){
             System.out.println("Ура, выкинул исключение!");
         }
+    }
+    
+    /**
+     * Проверяем, BuyDAO.create() не рухнет при некорректных данных.
+     */
+    @Test
+    public void testCreateBuyWithIncorrectItems() {
+        
+        // Построим новый склад (чтобы исключить ошибку отсутствия такового)
+        Storage storage = new Storage();
+        StorageDAO.create(storage);
+        int storage_id = storage.getId();
+        
+        // Создадим новый документ с синтаксической ошибкой в items
+        Buy buy = new Buy();
+        buy.setStorage_id(storage_id); 
+        buy.setItems("[{id: -1, number: 3, price: 160 }");
+        String result = BuyDAO.create(buy);
+        assertNotEquals("OK", result);
+        assertTrue(buy.getId() == 0);
+        
+        // Создадим новый документ со строкой вместо числа в price 
+        buy.setItems("[{id: -1, number: 3, price: str }]");
+        result = BuyDAO.create(buy);
+        assertNotEquals("OK", result);
+        assertTrue(buy.getId() == 0);
+        
+        // Создадим новый документ с отрицательным числом покупаемых товаров
+        buy.setItems("[{id: -1, number: -3, price: 160 }]");
+        result = BuyDAO.create(buy);
+        assertNotEquals("OK", result);
+        assertTrue(buy.getId() == 0);
+        
+        // Создадим новый документ c абракадаброй
+        buy.setItems("qwer3rfsdf");
+        result = BuyDAO.create(buy);
+        assertNotEquals("OK", result);
+        assertTrue(buy.getId() == 0);
+        
+        // Удалим наш склад
+        StorageDAO.delete(storage);
+        
     }
     
     /**
@@ -68,7 +105,8 @@ public class BuyDAOTest {
                 + "{id: " + item_id1 + ", number: 3, price: 160 },"
                 + "{id: " + item_id2 + ", number: 3, price: 170 }"
                 + "]");
-        BuyDAO.create(buy);
+        String result = BuyDAO.create(buy);
+        assertEquals("OK", result);
         assertFalse(buy.getId() == 0);
         
         // Проверим, что на вновь созданном складе есть данные товары, а в номенклатуре изменились цены
@@ -89,7 +127,8 @@ public class BuyDAOTest {
         StorageDAO.delete(storage);
         
         // Удалим документ
-        BuyDAO.delete(buy);
+        result = BuyDAO.delete(buy);
+        assertEquals("OK", result);
         
     }
     
@@ -112,7 +151,8 @@ public class BuyDAOTest {
         Buy buy = new Buy();
         buy.setStorage_id(-1); 
         buy.setItems("[{id: " + item_id + ", number: 3, price: 160 }]");
-        BuyDAO.create(buy);
+        String result = BuyDAO.create(buy);
+        assertNotEquals("OK", result);
         assertTrue(buy.getId() == 0);
         
         // Проверим отсутствие изменений в Item и ItemInStorage
@@ -141,23 +181,21 @@ public class BuyDAOTest {
         // в тестах выше мы создавали товар в номенклатуре исключительно для проверки изменений цены
         Buy buy = new Buy();
         buy.setStorage_id(storage_id);
-        buy.setItems("[{id: 1, number: 3, price: 150 }]");
-        BuyDAO.create(buy);
+        buy.setItems("[{id: -1, number: 3, price: 150 }]");
+        String result = BuyDAO.create(buy);
+        assertEquals("OK", result);
+        int buy_id = buy.getId();
         
         // Удалим документ
-        BuyDAO.delete(buy);
+        result = BuyDAO.delete(buy);
+        assertEquals("OK", result);
         
         // Еще раз удалим документ
-        try{
-            BuyDAO.delete(buy);
-            fail("Тест не пройден: повторный BuyDAO.delete() не выбросил исключение");
-        }
-        catch(Exception e){
-            System.out.println("Ура, выкинул исключение!");  
-        }
+        result = BuyDAO.delete(buy);
+        assertNotEquals("OK", result);
         
         // Удалим наши товары и склад
-        ItemInStorage itemInStorage = ItemInStorageDAO.findAllByItemStorage(1, storage_id).get(0);
+        ItemInStorage itemInStorage = ItemInStorageDAO.findAllByItemStorage(-1, storage_id).get(0);
         ItemInStorageDAO.delete(itemInStorage);
         StorageDAO.delete(storage);
         
@@ -168,8 +206,7 @@ public class BuyDAOTest {
      */
     @Test
     public void testFindUnexistendBuy() {
-        Buy buy = BuyDAO.findById(-1);
-        assertNull(buy);
+        assertNull(BuyDAO.findById(-1));
     }
 
     /**
@@ -187,8 +224,9 @@ public class BuyDAOTest {
         // Создадим новый документ
         Buy buy = new Buy();
         buy.setStorage_id(storage_id); 
-        buy.setItems("[{id: 1, number: 3, price: 160 }]");
-        BuyDAO.create(buy);
+        buy.setItems("[{id: -1, number: 3, price: 160 }]");
+        String result = BuyDAO.create(buy);
+        assertEquals("OK", result);
         int id = buy.getId();
         
         // Проверим, что добавленный документ окажется в списке 
@@ -204,12 +242,13 @@ public class BuyDAOTest {
         assertTrue(hasBuy);
         
         // Удалим наши товары и склад
-        ItemInStorage itemInStorage = ItemInStorageDAO.findAllByItemStorage(1, storage_id).get(0);
+        ItemInStorage itemInStorage = ItemInStorageDAO.findAllByItemStorage(-1, storage_id).get(0);
         ItemInStorageDAO.delete(itemInStorage);
         StorageDAO.delete(storage);
         
         // Удалим документ
-        BuyDAO.delete(buy);
+        result = BuyDAO.delete(buy);
+        assertEquals("OK", result);
         
     }
     
