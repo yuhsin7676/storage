@@ -32,7 +32,7 @@ public class MoveDAO {
         
         Transaction tx = session.beginTransaction();
         for(int i = 0; i < items.size(); i++){
-            List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAllByItemIdStorage(items.get(i).get("id"), move.getStorage_from());
+            List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAllByItemStorage(items.get(i).get("id"), move.getStorage_from());
             if(!itemsInStorage.isEmpty()){
                 ItemInStorage itemInStorage = itemsInStorage.get(0);
                 itemInStorage.setNumber(itemInStorage.getNumber() - items.get(i).get("number"));
@@ -40,14 +40,18 @@ public class MoveDAO {
                     tx.rollback();
                     return;
                 }
-                session.update(itemInStorage);
+                else if(itemInStorage.getNumber() == 0)
+                    session.delete(itemInStorage);
+                else
+                    session.update(itemInStorage);
+                
             }
             else{
                 tx.rollback();
                 return;
             }
             
-            itemsInStorage = ItemInStorageDAO.findAllByItemIdStorage(items.get(i).get("id"), move.getStorage_to());
+            itemsInStorage = ItemInStorageDAO.findAllByItemStorage(items.get(i).get("id"), move.getStorage_to());
             if(!itemsInStorage.isEmpty()){
                 ItemInStorage itemInStorage = itemsInStorage.get(0);
                 itemInStorage.setNumber(itemInStorage.getNumber() + items.get(i).get("number"));
@@ -75,6 +79,16 @@ public class MoveDAO {
         Move move = session.find(Move.class, id);
         session.close();
         return move;
+        
+    }
+    
+    public static void delete(Move move){
+        
+        Session session = HibernateSessionUtil.instance.openSession();
+        Transaction tx = session.beginTransaction();
+        session.delete(move);
+        tx.commit();
+        session.close();
         
     }
     

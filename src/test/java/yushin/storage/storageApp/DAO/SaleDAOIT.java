@@ -45,10 +45,18 @@ public class SaleDAOIT {
     }
     
     /**
-     * 123.
+     * Проверяем, что при создании документа по продаже существующих товаров 
+     * с существующего склада добавится документ в бд.
+     * Также проверяются изменения в Item и ItemInStorage.
      */
     @Test
     public void testCreateWhenStorageAndItemExist() {
+        
+        // Добавим новый товар в номенклатуру
+        Item item = new Item();
+        item.setName("New item");
+        ItemDAO.create(item);
+        int item_id = item.getId();
         
         // Построим новый склад
         Storage storage = new Storage();
@@ -58,99 +66,142 @@ public class SaleDAOIT {
         // Добавим товары на этот склад
         Buy buy = new Buy();
         buy.setStorage_id(storage_id);
-        buy.setItems("[{id: 1, number: 1, price: 150 }]");
+        buy.setItems("[{id: " + item_id + ", number: 1, price: 150 }]");
         BuyDAO.create(buy);
+        
+        // Проверим, что на вновь созданном складе есть данные товары
+        List<ItemInStorage> itemsInStorage1 = StorageDAO.getItems(storage);
+        assertEquals(1, itemsInStorage1.get(0).getNumber());
         
         // Создадим новый документ
         Sale sale = new Sale();
         sale.setStorage_id(storage_id); 
-        sale.setItems("[{id: 1, number: 1, price: 160 }]");
-        
-        // И сохраним его в БД
+        sale.setItems("[{id: " + item_id + ", number: 1, price: 160 }]");
         SaleDAO.create(sale);
         assertFalse(sale.getId() == 0);
+        
+        // Проверим, что на вновь созданном складе больше нет данных товаров,
+        // А в номенклатуре установилась цена продажи в 160
+        assertTrue(StorageDAO.getItems(storage).isEmpty());
+        item = ItemDAO.findById(item_id);
+        assertEquals(160, item.getPrice_sale());
+        
+        // Удалим наш товар и склад
+        ItemDAO.delete(item);
+        StorageDAO.delete(storage);   
         
     }
     
     /**
-     * 123.
+     * Проверяем, что при создании документа по продаже НЕсуществующих товаров 
+     * с существующего склада НЕ добавится документ в бд.
+     * Также проверяется отсутствие изменений в Item и ItemInStorage.
      */
     @Test
     public void testCreateWhenItemUnexist() {
+        
+        // Добавим новый товар в номенклатуру
+        Item item = new Item();
+        item.setName("New item");
+        item.setPrice_sale(120);
+        ItemDAO.create(item);
+        int item_id = item.getId();
         
         // Построим новый склад
         Storage storage = new Storage();
         StorageDAO.create(storage);
         int storage_id = storage.getId();
         
-        // Создадим новый документ
+        // Проверим, что на вновь созданном складе нет товаров
+        assertTrue(StorageDAO.getItems(storage).isEmpty());
+        
+        // Создадим новый документ (сохранение не должно пройти)
         Sale sale = new Sale();
         sale.setStorage_id(storage_id); 
-        sale.setItems("[{id: 1, number: 1, price: 160 }]");
-        
-        // И сохраним его в БД
+        sale.setItems("[{id: " + item_id + ", number: 1, price: 160 }]");
         SaleDAO.create(sale);
         assertTrue(sale.getId() == 0);
+        
+        // Проверим, что изменений нет
+        assertTrue(StorageDAO.getItems(storage).isEmpty());
+        assertEquals(120, ItemDAO.findById(item_id).getPrice_sale());
+        
+        // Удалим наш товар и склад
+        ItemDAO.delete(item);
+        StorageDAO.delete(storage);
         
     }
     
     /**
-     * 123.
+     * Проверяем, что при создании документа по продаже товаров 
+     * с НЕсуществующего склада НЕ добавится документ в бд.
      */
     @Test
     public void testCreateWhenStorageUnexist() {
         
-        // Создадим новый документ
+        // Добавим новый товар в номенклатуру
+        Item item = new Item();
+        item.setName("New item");
+        item.setPrice_sale(120);
+        ItemDAO.create(item);
+        int item_id = item.getId();
+        
+        // Создадим новый документ (сохранение не должно пройти)
         Sale sale = new Sale();
         sale.setStorage_id(-1); 
-        sale.setItems("[{id: 1, number: 3, price: 160 }]");
-        
-        // И сохраним его в БД
+        sale.setItems("[{id: " + item_id + ", number: 3, price: 160 }]");
         SaleDAO.create(sale);
         assertTrue(sale.getId() == 0);
+        
+        // Проверим, что изменений нет
+        assertEquals(120, ItemDAO.findById(item_id).getPrice_sale());
+        
+        // Удалим наш товар и склад
+        ItemDAO.delete(item);
         
     }
 
     /**
-     * Проверяем, что создание, изменение и удаление документа пройдет успешно.
+     * Проверяем, что удаление существующего документа пройдет успешно.
+     * Одновременно проверим, что повторное удаление должно выбросить исключение
      */
     @Test
-    public void testAll() {
+    public void testDeleteExistSale() {
         
-        // Купим товар и закинем его на 1-й склад
+        // Построим новый склад
+        Storage storage = new Storage();
+        StorageDAO.create(storage);
+        int storage_id = storage.getId();
+        
+        // Купим товар и закинем его на новый склад 
+        // На самом деле нам все равно, имеется ли товар в номенклатуре или нет,
+        // в тестах выше мы создавали товар в номенклатуре исключительно для проверки изменений цены
         Buy buy = new Buy();
-        buy.setStorage_id(1);
+        buy.setStorage_id(storage_id);
         buy.setItems("[{id: 1, number: 3, price: 150 }]");
         BuyDAO.create(buy);
-        
-        List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAllByItemIdStorage(1, 1);
-        ItemInStorage itemInStorage;
-        int number = 0;
-        if(!itemsInStorage.isEmpty()){
-            itemInStorage = itemsInStorage.get(0);
-            number = itemInStorage.getNumber();
-        } 
         
         // Создадим новый документ
         Sale sale = new Sale();
         sale.setStorage_id(1);
         sale.setItems("[{id: 1, number: 3, price: 160 }]");
-        
-        // И сохраним его в БД
         SaleDAO.create(sale);
 
-        // Найдем этот документ
-        int id = sale.getId();
-        sale = SaleDAO.findById(id);
-        assertEquals(sale.getId(), id);
+        // Удалим документ
+        SaleDAO.delete(sale);
         
-        // Проверим, что убавилось 3 товара с артикулом 1 на склад 1;
-        itemInStorage = ItemInStorageDAO.findAllByItemIdStorage(1, 1).get(0);
-        assertEquals(number - 3, itemInStorage.getNumber());
+        // Еще раз удалим документ
+        try{
+            SaleDAO.delete(sale);
+            fail("Тест не пройден: повторный SaleDAO.delete() не выбросил исключение");
+        }
+        catch(Exception e){
+            System.out.println("Ура, выкинул исключение!");  
+        }
         
-        // Найдем товар с артикулом 1
-        Item item = ItemDAO.findById(1);
-        assertEquals(160, item.getPrice_sale());
+        // Удалим наш склад
+        StorageDAO.delete(storage);
+        
         
     }
     
@@ -164,7 +215,7 @@ public class SaleDAOIT {
     }
 
     /**
-     * Проверяем, что создание выдача списка документов о покупке пройдет успешно.
+     * Проверяем, что создание выдача списка документов о продаже пройдет успешно.
      * Также проверяется, что вновь добавленный склад в этом списке окажется
      * Тест требует доработки!
      */
@@ -186,16 +237,20 @@ public class SaleDAOIT {
         Sale sale = new Sale();
         sale.setStorage_id(storage_id); 
         sale.setItems("[{id: 1, number: 3, price: 160 }]");
-        
-        // И сохраним его в БД
         SaleDAO.create(sale);
         int id = sale.getId();
         
         // Проверим, что добавленный документ окажется в списке 
-        // (пердполагается, что он будет в конце списка, что, вообще говоря, неверно)
         List<Sale> sales = SaleDAO.findAll();
-        sale = sales.get(sales.size() - 1);
-        assertEquals(id, sale.getId());
+        boolean hasSale = false;
+        for(int i = 0; i < sales.size(); i++){
+            sale = sales.get(i);
+            if(sale.getId() == id){
+                hasSale = true;
+                break;
+            }
+        }
+        assertTrue(hasSale);
         
     }
     

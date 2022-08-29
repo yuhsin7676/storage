@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import yushin.storage.storageApp.entities.ItemInStorage;
 import yushin.storage.storageApp.entities.Storage;
 import yushin.storage.storageApp.util.HibernateSessionUtil;
 
@@ -40,11 +41,22 @@ public class StorageDAO {
     
     public static void delete(Storage storage){
         
+        if(getItems(storage).isEmpty()){
+            Session session = HibernateSessionUtil.instance.openSession();
+            Transaction tx = session.beginTransaction();
+            session.delete(storage);
+            tx.commit();
+            session.close();
+        }
+        
+    }
+    
+    public static List<ItemInStorage> getItems(Storage storage){
+        
         Session session = HibernateSessionUtil.instance.openSession();
-        Transaction tx = session.beginTransaction();
-        session.delete(storage);
-        tx.commit();
+        List<ItemInStorage> storages = ItemInStorageDAO.findAllByStorage(storage.getId());
         session.close();
+        return storages;
         
     }
     

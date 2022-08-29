@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import yushin.storage.storageApp.entities.Buy;
 import yushin.storage.storageApp.entities.Item;
 import yushin.storage.storageApp.entities.ItemInStorage;
@@ -28,7 +29,7 @@ public class BuyDAO {
         Type type = new TypeToken<ArrayList<Map<String, Integer>>>(){}.getType();
         ArrayList<Map<String, Integer>> items = new Gson().fromJson(buy.getItems(), type);
         for(int i = 0; i < items.size(); i++){
-            List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAllByItemIdStorage(items.get(i).get("id"), buy.getStorage_id());
+            List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAllByItemStorage(items.get(i).get("id"), buy.getStorage_id());
             if(!itemsInStorage.isEmpty()){
                 ItemInStorage itemInStorage = itemsInStorage.get(0);
                 itemInStorage.setNumber(itemInStorage.getNumber() + items.get(i).get("number"));
@@ -61,6 +62,16 @@ public class BuyDAO {
         Buy buy = session.find(Buy.class, id);
         session.close();
         return buy;
+        
+    }
+    
+    public static void delete(Buy buy){
+        
+        Session session = HibernateSessionUtil.instance.openSession();
+        Transaction tx = session.beginTransaction();
+        session.delete(buy);
+        tx.commit();
+        session.close();
         
     }
     

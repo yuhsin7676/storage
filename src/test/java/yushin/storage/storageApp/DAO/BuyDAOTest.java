@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import yushin.storage.storageApp.entities.Buy;
 import yushin.storage.storageApp.entities.Item;
 import yushin.storage.storageApp.entities.ItemInStorage;
+import yushin.storage.storageApp.entities.Sale;
 import yushin.storage.storageApp.entities.Storage;
 
 /**
@@ -23,31 +24,37 @@ import yushin.storage.storageApp.entities.Storage;
 public class BuyDAOTest {
 
     /**
-     * Проверяем, что StorageDAO.create(null) выбросит исключение.
+     * Проверяем, что BuyDAO.create(null) выбросит исключение.
      */
     @Test
     public void testCreateNull() {
-
         try{
-            
-            // Попытаемся сохранить в БД несуществующий документ
             BuyDAO.create(null);
-            
-            // Если прожует null, то тест не пройден
             fail();
-            
         }
         catch(Exception e){
             System.out.println("Ура, выкинул исключение!");
         }
-        
     }
     
     /**
-     * 123.
+     * Проверяем, что при создании документа по покупке товаров 
+     * на существующий склад добавится документ в бд.
+     * Также проверяются изменения в Item и ItemInStorage.
      */
     @Test
     public void testCreateWhenStorageExist() {
+        
+        // Добавим 2 новых товара в номенклатуру
+        Item item1 = new Item();
+        item1.setName("New item");
+        ItemDAO.create(item1);
+        int item_id1 = item1.getId();
+        
+        Item item2 = new Item();
+        item2.setName("New item");
+        ItemDAO.create(item2);
+        int item_id2 = item2.getId();
         
         // Построим новый склад
         Storage storage = new Storage();
@@ -57,65 +64,113 @@ public class BuyDAOTest {
         // Создадим новый документ
         Buy buy = new Buy();
         buy.setStorage_id(storage_id); 
-        buy.setItems("[{id: 1, number: 3, price: 160 }]");
-        
-        // И сохраним его в БД
+        buy.setItems("["
+                + "{id: " + item_id1 + ", number: 3, price: 160 },"
+                + "{id: " + item_id2 + ", number: 3, price: 170 }"
+                + "]");
         BuyDAO.create(buy);
         assertFalse(buy.getId() == 0);
+        
+        // Проверим, что на вновь созданном складе есть данные товары, а в номенклатуре изменились цены
+        ItemInStorage itemInStorage1 = ItemInStorageDAO.findAllByItemStorage(item_id1, storage_id).get(0);
+        ItemInStorage itemInStorage2 = ItemInStorageDAO.findAllByItemStorage(item_id2, storage_id).get(0);
+        assertEquals(3, itemInStorage1.getNumber());
+        assertEquals(3, itemInStorage2.getNumber());
+        assertEquals(160, ItemDAO.findById(item_id1).getPrice_buy());
+        assertEquals(170, ItemDAO.findById(item_id2).getPrice_buy());
+        
+        // Продадим наши товары со склада (иначе склад не удалится)
+        Sale sale = new Sale();
+        sale.setStorage_id(storage_id); 
+        sale.setItems("["
+                + "{id: " + item_id1 + ", number: 3, price: 160 },"
+                + "{id: " + item_id2 + ", number: 3, price: 170 }"
+                + "]");
+        SaleDAO.create(sale);
+        SaleDAO.delete(sale);
+        
+        // Удалим наши товары и склад
+        ItemDAO.delete(item1);
+        ItemDAO.delete(item2);
+        StorageDAO.delete(storage);
+        
+        // Удалим документ
+        BuyDAO.delete(buy);
         
     }
     
     /**
-     * 123.
+     * Проверяем, что при создании документа по покупке товаров 
+     * на НЕсуществующий склад НЕ добавится документ в бд.
+     * Также проверяются изменения в Item и ItemInStorage.
      */
     @Test
     public void testCreateWhenStorageUnexist() {
         
-        // Создадим новый документ
+        // Добавим новый товар в номенклатуру
+        Item item = new Item();
+        item.setName("New item");
+        item.setPrice_buy(120);
+        ItemDAO.create(item);
+        int item_id = item.getId();
+        
+        // Создадим новый документ (не должен создаться!)
         Buy buy = new Buy();
         buy.setStorage_id(-1); 
-        buy.setItems("[{id: 1, number: 3, price: 160 }]");
-        
-        // И сохраним его в БД
+        buy.setItems("[{id: " + item_id + ", number: 3, price: 160 }]");
         BuyDAO.create(buy);
         assertTrue(buy.getId() == 0);
+        
+        // Проверим отсутствие изменений в Item и ItemInStorage
+        assertTrue(ItemInStorageDAO.findAllByItemStorage(1, -1).isEmpty());
+        assertEquals(120, ItemDAO.findById(item_id).getPrice_buy());
+        
+        // Удалим товар из номенклатуры
+        ItemDAO.delete(item);
         
     }
 
     /**
-     * Проверяем, что создание, изменение и удаление склада пройдет успешно.
+     * Проверяем, что создание и удаление документа пройдет успешно.
+     * Одновременно проверим, что повторное удаление должно выбросить исключение
      */
     @Test
-    public void testAll() {
+    public void testDoubleDelete() {
         
-        List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAllByItemIdStorage(1, 1);
-        ItemInStorage itemInStorage;
-        int number = 0;
-        if(!itemsInStorage.isEmpty()){
-            itemInStorage = itemsInStorage.get(0);
-            number = itemInStorage.getNumber();
+        // Построим новый склад
+        Storage storage = new Storage();
+        StorageDAO.create(storage);
+        int storage_id = storage.getId();
+        
+        // Купим товар и закинем его на новый склад 
+        // На самом деле нам все равно, имеется ли товар в номенклатуре или нет,
+        // в тестах выше мы создавали товар в номенклатуре исключительно для проверки изменений цены
+        Buy buy = new Buy();
+        buy.setStorage_id(storage_id);
+        buy.setItems("[{id: 1, number: 3, price: 150 }]");
+        BuyDAO.create(buy);
+        
+        // Удалим документ
+        BuyDAO.delete(buy);
+        
+        // Еще раз удалим документ
+        try{
+            BuyDAO.delete(buy);
+            fail("Тест не пройден: повторный BuyDAO.delete() не выбросил исключение");
+        }
+        catch(Exception e){
+            System.out.println("Ура, выкинул исключение!");  
         }
         
-        // Создадим новый документ
-        Buy buy = new Buy();
-        buy.setStorage_id(1);
-        buy.setItems("[{id: 1, number: 3, price: 160 }]");
+        // Продадим наши товары со склада (иначе склад не удалится)
+        Sale sale = new Sale();
+        sale.setStorage_id(storage_id); 
+        sale.setItems("[{id: 1, number: 3, price: 160 }]");
+        SaleDAO.create(sale);
+        SaleDAO.delete(sale);
         
-        // И сохраним его в БД
-        BuyDAO.create(buy);
-
-        // Найдем этот документ
-        int id = buy.getId();
-        buy = BuyDAO.findById(id);
-        assertEquals(buy.getId(), id);
-        
-        // Проверим, что добавилось 3 товара с артикулом 1 на склад 1;
-        itemInStorage = ItemInStorageDAO.findAllByItemIdStorage(1, 1).get(0);
-        assertEquals(number + 3, itemInStorage.getNumber());
-        
-        // Найдем товар с артикулм 1
-        Item item = ItemDAO.findById(1);
-        assertEquals(160, item.getPrice_buy());
+        // Удалим наш склад
+        StorageDAO.delete(storage);
         
     }
     
@@ -124,17 +179,13 @@ public class BuyDAOTest {
      */
     @Test
     public void testFindUnexistendBuy() {
-
-        // Попытаемся сохранить в БД несуществующий склад
         Buy buy  = BuyDAO.findById(-1);
         assertNull(buy);
-        
     }
 
     /**
-     * Проверяем, что создание выдача списка документов о покупке пройдет успешно.
-     * Также проверяется, что вновь добавленный склад в этом списке окажется
-     * Тест требует доработки!
+     * Проверяем, что выдача списка документов о покупке пройдет успешно.
+     * Также проверяется наличие вновь добавленного документ в этом списке
      */
     @Test
     public void testFindAll() {
@@ -148,16 +199,33 @@ public class BuyDAOTest {
         Buy buy = new Buy();
         buy.setStorage_id(storage_id); 
         buy.setItems("[{id: 1, number: 3, price: 160 }]");
-        
-        // И сохраним его в БД
         BuyDAO.create(buy);
         int id = buy.getId();
         
         // Проверим, что добавленный документ окажется в списке 
-        // (пердполагается, что он будет в конце списка, что, вообще говоря, неверно)
         List<Buy> buys = BuyDAO.findAll();
-        buy = buys.get(buys.size() - 1);
-        assertEquals(id, buy.getId());
+        boolean hasBuy = false;
+        for(int i = 0; i < buys.size(); i++){
+            buy = buys.get(i);
+            if(buy.getId() == id){
+                hasBuy = true;
+                break;
+            }
+        }
+        assertTrue(hasBuy);
+        
+        // Продадим наши товары со склада (иначе склад не удалится)
+        Sale sale = new Sale();
+        sale.setStorage_id(storage_id); 
+        sale.setItems("[{id: 1, number: 3, price: 160 }]");
+        SaleDAO.create(sale);
+        SaleDAO.delete(sale);
+        
+        // Удалим наш склад
+        StorageDAO.delete(storage);
+        
+        // Удалим документ
+        BuyDAO.delete(buy);
         
     }
     

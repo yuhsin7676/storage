@@ -31,7 +31,7 @@ public class SaleDAO {
         
         Transaction tx = session.beginTransaction();
         for(int i = 0; i < items.size(); i++){
-            List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAllByItemIdStorage(items.get(i).get("id"), sale.getStorage_id());
+            List<ItemInStorage> itemsInStorage = ItemInStorageDAO.findAllByItemStorage(items.get(i).get("id"), sale.getStorage_id());
             if(!itemsInStorage.isEmpty()){
                 ItemInStorage itemInStorage = itemsInStorage.get(0);
                 itemInStorage.setNumber(itemInStorage.getNumber() - items.get(i).get("number"));
@@ -39,7 +39,10 @@ public class SaleDAO {
                     tx.rollback();
                     return;
                 }
-                session.update(itemInStorage);
+                else if(itemInStorage.getNumber() == 0)
+                    session.delete(itemInStorage);
+                else
+                    session.update(itemInStorage);
             }
             else{
                 tx.rollback();
@@ -66,6 +69,16 @@ public class SaleDAO {
         Sale sale = session.find(Sale.class, id);
         session.close();
         return sale;
+        
+    }
+    
+    public static void delete(Sale sale){
+        
+        Session session = HibernateSessionUtil.instance.openSession();
+        Transaction tx = session.beginTransaction();
+        session.delete(sale);
+        tx.commit();
+        session.close();
         
     }
     

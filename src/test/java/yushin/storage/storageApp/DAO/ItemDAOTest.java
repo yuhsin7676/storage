@@ -105,11 +105,17 @@ public class ItemDAOTest {
         ItemDAO.create(item);
         int id = item.getId();
         
-        // Проверим, что добавленный товар окажется в списке 
-        // (пердполагается, что он будет в конце списка, что, вообще говоря, неверно)
+        // Проверим, что добавленный документ окажется в списке 
         List<Item> items = ItemDAO.findAll();
-        item = items.get(items.size() - 1);
-        assertEquals(id, item.getId());
+        boolean hasItem = false;
+        for(int i = 0; i < items.size(); i++){
+            item = items.get(i);
+            if(item.getId() == id){
+                hasItem = true;
+                break;
+            }
+        }
+        assertTrue(hasItem);
         
     }
     

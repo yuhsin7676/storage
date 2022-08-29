@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import yushin.storage.storageApp.entities.Buy;
 import yushin.storage.storageApp.entities.Storage;
 
 /**
@@ -82,6 +83,30 @@ public class StorageDAOTest {
     }
     
     /**
+     * Проверяем, что удаление склада, на котором есть товары завершится неудачей.
+     */
+    @Test
+    public void testStorageWithItems() {
+        
+        // Построим новый склад
+        Storage storage = new Storage();
+        storage.setName("New storage");
+        StorageDAO.create(storage);
+        int id = storage.getId();
+        
+        // Купим на этот склад товары
+        Buy buy = new Buy();
+        buy.setStorage_id(id);
+        buy.setItems("[{id: 1, number: 3, price: 160 }]");
+        BuyDAO.create(buy);
+        
+        // И удалим его (не должен удалиться)
+        StorageDAO.delete(storage);
+        assertNotNull(StorageDAO.findById(id));
+        
+    }
+    
+    /**
      * Проверяем, что StorageDAO.findById(-1) вернет null.
      */
     @Test
@@ -109,11 +134,20 @@ public class StorageDAOTest {
         StorageDAO.create(storage);
         int id = storage.getId();
         
-        // Проверим, что добавленный склад окажется в списке 
-        // (пердполагается, что он будет в конце списка, что, вообще говоря, неверно)
+        // Проверим, что добавленный документ окажется в списке 
         List<Storage> storages = StorageDAO.findAll();
-        storage = storages.get(storages.size() - 1);
-        assertEquals(id, storage.getId());
+        boolean hasStorage = false;
+        for(int i = 0; i < storages.size(); i++){
+            storage = storages.get(i);
+            if(storage.getId() == id){
+                hasStorage = true;
+                break;
+            }
+        }
+        assertTrue(hasStorage);
+        
+        // Удалим данный склад
+        StorageDAO.delete(storage);
         
     }
     
