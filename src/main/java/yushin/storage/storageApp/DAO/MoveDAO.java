@@ -58,7 +58,7 @@ public class MoveDAO {
                 itemInStorage.setItem_id(items.get(i).get("id"));
                 itemInStorage.setNumber(items.get(i).get("number"));
                 itemInStorage.setStorage_id(move.getStorage_to());
-                session.save(itemInStorage);
+                session.persist(itemInStorage);
             }
 
         }
