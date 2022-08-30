@@ -122,6 +122,16 @@ public class ItemServletsTest {
     }
     
     /**
+     * Проверим, что FindAllItem c фильтрами не рухнет.
+     */
+    @Test
+    public void testFindAllItemFilter() throws Exception {
+        when(request.getParameter("filters")).thenReturn("['banana', 'orange']");
+        new FindAllItem().doPost(request, response);
+        verify(printWriter).println(anyString());
+    }
+    
+    /**
      * Проверим, что DeleteItem пройдет успешно если товар существует.
      */
     @Test

@@ -3,6 +3,7 @@ package yushin.storage.storageApp.DAO;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 import yushin.storage.storageApp.entities.Item;
 import yushin.storage.storageApp.util.HibernateSessionUtil;
 
@@ -65,6 +66,24 @@ public class ItemDAO {
         
         Session session = HibernateSessionUtil.instance.openSession();
         List<Item> items = (List<Item>) session.createQuery("from Item").list();
+        session.close();
+        return items;
+        
+    }
+    
+    public static List<Item> findAll(List<String> filters){
+        
+        Session session = HibernateSessionUtil.instance.openSession();
+        
+        String hql = "from Item where 1 = 2 ";
+        for(int i = 0; i < filters.size(); i++)
+            hql += "or name = :filter" + i + " ";
+        Query query = session.createQuery(hql);
+        for(int i = 0; i < filters.size(); i++)
+            query.setParameter("filter" + i, filters.get(i));
+        List<Item> items = (List<Item>) query.list();
+        
+        session.close();
         return items;
         
     }
