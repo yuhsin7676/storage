@@ -1,11 +1,46 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>TODO supply a title</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body>
-        <div>TODO write content</div>
-    </body>
+<head>
+    <title>TODO supply a title</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    
+    <p>Черновик</p>
+    <textarea style="width:600px; height:200px;"></textarea>
+    <hr>
+    <select id="chooseURL">
+        <option value = "AddBuy">Добавить покупку</option>
+        <option value = "AddItem">Добавить товар</option>
+        <option value = "AddMove">Добавить перемещение</option>
+        <option value = "AddSale">Добавить продажу</option>
+        <option value = "AddStorage">Добавить склад</option>
+        <option value = "DeleteBuy">Удалить покупку</option>
+        <option value = "DeleteItem">Удалить товар</option>
+        <option value = "DeleteMove">Удалить перемещение</option>
+        <option value = "DeleteSale">Удалить продажу</option>
+        <option value = "DeleteStorage">Удалить склад</option>
+        <option value = "FindAllBuy">Показать покупки</option>
+        <option value = "FindAllItem" selected>Показать товары</option>
+        <option value = "FindAllItemInStorage">Показать товары на складах</option>
+        <option value = "FindAllMove">Показать перемещения</option>
+        <option value = "FindAllSale">Показать продажи</option>
+        <option value = "FindAllStorage">Показать склад</option>
+        <option value = "UpdateItem">Обновить товар</option>
+        <option value = "UpdateStorage">Обновить склад</option>
+    </select>
+    <button onclick = "addTemplateToInput()">Добавить шаблон в ввод</button>
+    <br>
+    <p>Ввод</p>
+    <textarea id="input" style="width:600px; height:200px;"></textarea>
+    <br>
+    <button onclick = "post()">Отправить</button>
+    <hr>
+    <p>Вывод</p>
+    <textarea id="output" style="width:600px; height:200px;"></textarea>
+    
+</body>
 </html>
+<script src="jquery-3.3.1.min.js"></script>
+<script src="script.js"></script>
