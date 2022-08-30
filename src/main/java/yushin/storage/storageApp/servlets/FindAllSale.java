@@ -3,30 +3,23 @@ package yushin.storage.storageApp.servlets;
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import yushin.storage.storageApp.DAO.BuyDAO;
-import yushin.storage.storageApp.entities.Buy;
+import yushin.storage.storageApp.DAO.SaleDAO;
+import yushin.storage.storageApp.entities.Sale;
 
-@WebServlet(name = "AddBuy", urlPatterns = {"/AddBuy"})
-public class AddBuy extends HttpServlet {
+@WebServlet(name = "FindAllSale", urlPatterns = {"/FindAllSale"})
+public class FindAllSale extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         
-        String buyJSON = request.getParameter("buy");
-        
-        String result;
-        try{
-            Buy buy = new Gson().fromJson(buyJSON, Buy.class);
-            result = BuyDAO.create(buy);
-        }
-        catch(Exception e){
-            result = e.getMessage();
-        }
+        List<Sale> sale = SaleDAO.findAll();
+        String result = new Gson().toJson(sale);
         
         // Возврат сообщения
         response.setContentType("text/html;charset=UTF-8");

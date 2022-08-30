@@ -8,21 +8,21 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import yushin.storage.storageApp.DAO.BuyDAO;
-import yushin.storage.storageApp.entities.Buy;
+import yushin.storage.storageApp.DAO.ItemDAO;
+import yushin.storage.storageApp.entities.Item;
 
-@WebServlet(name = "AddBuy", urlPatterns = {"/AddBuy"})
-public class AddBuy extends HttpServlet {
+@WebServlet(name = "DeleteItem", urlPatterns = {"/DeleteItem"})
+public class DeleteItem extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         
-        String buyJSON = request.getParameter("buy");
+        String itemJSON = request.getParameter("item");
         
         String result;
         try{
-            Buy buy = new Gson().fromJson(buyJSON, Buy.class);
-            result = BuyDAO.create(buy);
+            Item item = new Gson().fromJson(itemJSON, Item.class);
+            result = ItemDAO.delete(item);
         }
         catch(Exception e){
             result = e.getMessage();

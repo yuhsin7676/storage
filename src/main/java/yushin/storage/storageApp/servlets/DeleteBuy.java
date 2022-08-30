@@ -1,3 +1,7 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
+ */
 package yushin.storage.storageApp.servlets;
 
 import com.google.gson.Gson;
@@ -11,8 +15,12 @@ import javax.servlet.http.HttpServletResponse;
 import yushin.storage.storageApp.DAO.BuyDAO;
 import yushin.storage.storageApp.entities.Buy;
 
-@WebServlet(name = "AddBuy", urlPatterns = {"/AddBuy"})
-public class AddBuy extends HttpServlet {
+/**
+ *
+ * @author ilya
+ */
+@WebServlet(name = "DeleteBuy", urlPatterns = {"/DeleteBuy"})
+public class DeleteBuy extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -22,7 +30,7 @@ public class AddBuy extends HttpServlet {
         String result;
         try{
             Buy buy = new Gson().fromJson(buyJSON, Buy.class);
-            result = BuyDAO.create(buy);
+            result = BuyDAO.delete(buy);
         }
         catch(Exception e){
             result = e.getMessage();

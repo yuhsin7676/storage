@@ -8,21 +8,21 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import yushin.storage.storageApp.DAO.BuyDAO;
-import yushin.storage.storageApp.entities.Buy;
+import yushin.storage.storageApp.DAO.StorageDAO;
+import yushin.storage.storageApp.entities.Storage;
 
-@WebServlet(name = "AddBuy", urlPatterns = {"/AddBuy"})
-public class AddBuy extends HttpServlet {
-
+@WebServlet(name = "AddStorage", urlPatterns = {"/AddStorage"})
+public class AddStorage extends HttpServlet {
+    
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         
-        String buyJSON = request.getParameter("buy");
+        String storageJSON = request.getParameter("storage");
         
         String result;
         try{
-            Buy buy = new Gson().fromJson(buyJSON, Buy.class);
-            result = BuyDAO.create(buy);
+            Storage storage = new Gson().fromJson(storageJSON, Storage.class);
+            result = StorageDAO.create(storage);
         }
         catch(Exception e){
             result = e.getMessage();
@@ -35,5 +35,5 @@ public class AddBuy extends HttpServlet {
         }
         
     }
-
+    
 }
