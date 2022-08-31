@@ -5,10 +5,10 @@
 ### AddBuy
 __Параметр:__ buy <br>
 __Значение:__ <br>
-``{
+`{
 	id: 0,
 	storage_id: 1,
-	items:"[`{id: 1, number: 3, price: 150 }`<br>]"
+	items:"[{id: 1, number: 3, price: 150 }]"
 }`<br>`
 __Возвращает:__ "OK" или сообщение об ошибке <br>
 
@@ -30,7 +30,7 @@ __Значение:__ <br>
 	id: 0,
 	storage_from: 3,
 	storage_to: 4,
-	items: "[`{id: 1, number: 3}`<br>]"
+	items: "[{id: 1, number: 3}]"
 }`<br>
 __Возвращает:__ "OK" или сообщение об ошибке <br>
 
@@ -40,7 +40,7 @@ __Значение:__ <br>
 `{
 	id: 0,
 	storage_id: 3,
-	items: "[`{id: 1, number: 3, price: 160}`<br>]"
+	items: "[{id: 1, number: 3, price: 160}]"
 }`<br>
 __Возвращает:__ "OK" или сообщение об ошибке <br>
 
@@ -59,7 +59,7 @@ __Значение:__ <br>
 `{
 	id: 0,
 	storage_id: 1,
-	items: "[`{id: 1, number: 3, price: 150 }`<br>]"
+	items: "[{id: 1, number: 3, price: 150 }]"
 }`<br>
 __Возвращает:__ "OK" или сообщение об ошибке <br>
 
@@ -81,7 +81,7 @@ __Значение:__ <br>
 	id: 0,
 	storage_from: 3,
 	storage_to: 4,
-	items: "[`{id: 1, number: 3}`<br>]"
+	items: "[{id: 1, number: 3}]"
 }`<br>
 __Возвращает:__ "OK" или сообщение об ошибке <br>
 
@@ -91,7 +91,7 @@ __Значение:__ <br>
 `{
 	id: 0,
 	storage_id: 3,
-	items: "[`{id: 1, number: 3, price: 160}`<br>]"
+	items: "[{id: 1, number: 3, price: 160}]"
 }`<br>
 __Возвращает:__ "OK" или сообщение об ошибке <br>
 
