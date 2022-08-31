@@ -5,10 +5,10 @@
 ### AddBuy
 __Параметр:__ buy <br>
 __Значение:__ <br>
-`{
-	id: 0, <br>
-	storage_id: 1, <br>
-	items:"[{id: 1, number: 3, price: 150 }]" <br>
+>`{
+	id: 0,
+	storage_id: 1,
+	items:"[{id: 1, number: 3, price: 150 }]"
 }`
 __Возвращает:__ "OK" или сообщение об ошибке <br>
 
