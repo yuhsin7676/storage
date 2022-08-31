@@ -129,6 +129,7 @@ chooseURL.onchange = function(){
                   + "}";
             break;
         case "UpdateStorage":
+            parameterName = "storage";
             input.placeholder = 
                     "{\n"
                   + "    id: 0, \n"
